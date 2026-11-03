@@ -117,3 +117,20 @@ Full requirement and experiment table: `Documentation/Lab3_Implementation.md`. E
 | Smoothing and camera experiments | VERIFIED numerically; subjective feel NOT VERIFIED | `yumusatma_deneyi*.csv`, `kamera_*_deneyi*.csv` |
 | Lab 3 Windows build (`Builds/Windows_Rota03`) | VERIFIED: build succeeded; exe starts in Rota03 with the follow camera; no errors in the log | `Logs/unity_build_rota03.log`, `Logs/player_run_rota03.log`, `Logs/lab3/player_rota03_*.png` |
 | Keyboard flight in the exe or Editor by a person | NOT VERIFIED (no real key presses possible in this session) | — |
+
+
+## 6. Lab 5 (Rota05), 2026-11-03
+
+Batch mode, Unity 6000.6.4f1. Logs and results in `Logs/lab5/`.
+
+| Suite | Result |
+|---|---|
+| EditMode (whole project) | **193/193 passed** (147 before Lab 5 + 46 new: `Lab5FormulTests` 31, `Lab5SceneTests` 15) |
+| PlayMode (whole project) | **89 passed, 1 skipped** (76 before + 13 `Lab5PlayTests`; skipped = the explicit image test `Lab5GorselKayit`) |
+| C# compilation | no errors; no new warnings from Lab 5 code (older test files keep their obsolete-API warnings) |
+| Windows player Rota05 | build succeeded (0 errors, 2 warnings as before); ran windowed 25 s: HUD, countdown, dive panel, terrain, hills, flag poles visible; no exceptions in `player_rota05.log` (`Logs/lab5/player/*.png`) |
+| Earlier scenes | Rota02, Rota03, Rota04, Rota04Hud, SampleScene MD5 unchanged (test) |
+
+What the tests prove and what they do not: requirement mapping in `Lab5_Implementation.md` §2. Visual record (camera renders, examined): hills after the terrain-following fix, dumps, gun, sound locator, the view from gun 2 blocked by Tepe 3, a 60° dive (`Logs/lab5/gorsel/`). Measurement for Step 05: `Logs/lab5/olcum_gorus.txt` (Stopwatch in batch mode, not the Profiler).
+
+NOT TESTED: a hand-flown full level and its balance, real keyboard presses of Space/R, the Scene-view Gizmo look, a crash on a hill slope, the Profiler task (user).

@@ -6,7 +6,7 @@ Develop a professional, modular aircraft simulation around the existing NU.D.36 
 ## Language
 Communicate with the user in Turkish. Include English equivalents for important technical terms when useful.
 
-## Current Project State (as of 2026-10-20)
+## Current Project State (as of 2026-11-03)
 - Initial setup is complete. The Unity project already exists at `NU.D.36_Unity/` (Unity 6000.6.4f1, URP Blank template). Do not create a new project or rebuild the existing one; continue development inside `NU.D.36_Unity/`.
 - Blender 5.2.2 LTS exported the aircraft to `Exports/NU_D_36.fbx`, which is imported as `NU.D.36_Unity/Assets/Models/NU_D_36.fbx`.
 - Reported setup results: Blender mesh comparison passed, project creation, asset import and C# compilation succeeded, EditMode tests 8/8 and PlayMode tests 1/1 passed, Windows standalone build succeeded. The workspace `.blend` SHA256 and timestamp were unchanged.
@@ -14,6 +14,7 @@ Communicate with the user in Turkish. Include English equivalents for important 
 - Lab 2 (scene `Rota02`, `HedefeGit`, `Radar`, `KanatYatisi`, Gizmos) is implemented from the task list supplied in the conversation; worksheet screenshots were not available, so several values are documented defaults (`Documentation/Lab2_Implementation_Plan.md`, `DecisionLog.md` D-009 … D-024). Verification status: `Documentation/TestReport.md`.
 - Lab 3 (scene `Rota03`, a copy of Rota02; `UcusKontrol`, `PlayerInput` with map `Ucus`, `Saglik`/`CanYazisi`, `TakipKamerasi`) is implemented and tested (`Documentation/Lab3_Implementation.md`, D-025 … D-033). The labs accumulate in this one project: keep earlier lab scenes unchanged and their tests passing. The MDA worksheet is a user task. Lab 2 awaits user review before Lab 3.
 - Lab 4 (scenes `Rota04`, `Rota04Hud`: reconnaissance loop, landing/crash, countdown, HUD, flight model) is implemented (`Documentation/Lab4_*.md`, D-039 … D-054).
+- Lab 5 / Hafta 5 "Bölüm 2 — Sınır Hattı" (scene `Rota05`, copy of Rota04Hud; line of sight, sound locator, tunnelling/sweep, bomb and release window, level loop) is implemented and tested from the worksheet text pasted on 2026-11-03 (`Documentation/Lab5_Implementation.md`, D-055 … D-066). The course's supplied files (Patlama, MuhimmatMevzii, SeviyeYoneticisi, DalisGostergesi) and the Hurricane model were not available: stand-ins exist, the model is BLOCKED. Project layers 8–12 (Ucak, Arazi, Yapi, Hedef, Mermi) belong to Lab 5.
 - Details and evidence: `Documentation/EnvironmentReport.md`, `Requirements.md`, `DecisionLog.md`, `SetupAndRun.md`. Keep them consistent with the project when things change.
 
 ## Workspace Layout

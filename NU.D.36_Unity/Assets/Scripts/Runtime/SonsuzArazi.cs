@@ -10,7 +10,8 @@ namespace NU36
     /// the target enters another chunk, the chunks that left the window are re-assigned to the
     /// newly visible coordinates and rebuilt (a few per frame, nearest first). Terrain shape is a
     /// pure function of world position (<see cref="AraziUretici"/>), so it never changes and never
-    /// depends on the flight path. No colliders: the terrain is visual only.
+    /// depends on the flight path. No colliders by default (Lab 3/4: visual only); Lab 5 switches on
+    /// <c>carpisici</c>, which gives every chunk a Mesh Collider on this object's layer (rays need something to hit).
     /// </summary>
     [DefaultExecutionOrder(100)] // after the flight controller has moved the aircraft this frame
     public class SonsuzArazi : MonoBehaviour
@@ -26,11 +27,14 @@ namespace NU36
         [SerializeField, Range(1, 12)] int yaricap = 6;
         [Tooltip("Chunks rebuilt per frame while the window moves (the initial window is built at once).")]
         [SerializeField, Range(1, 16)] int kareBasinaInsa = 3;
+        [Tooltip("Lab 5: add a Mesh Collider to every chunk (layer = this object's layer). Off in Lab 3/4.")]
+        [SerializeField] bool carpisici;
 
         sealed class Chunk
         {
             public GameObject nesne;
             public MeshRenderer renderer;
+            public MeshCollider carpisici;
             public Mesh mesh;
             public Vector2Int koord;
             public bool hazir;
@@ -54,6 +58,7 @@ namespace NU36
         public float ChunkBoyutu => chunkBoyutu;
         public int Hucre => hucre;
         public int Yaricap => yaricap;
+        public bool Carpisici => carpisici;
         public int HavuzBoyutu => havuz == null ? 0 : havuz.Length;
         public int HazirChunkSayisi { get; private set; }
         public int BekleyenChunkSayisi => bekleyen.Count;
@@ -85,6 +90,7 @@ namespace NU36
             for (int i = 0; i < havuz.Length; i++)
             {
                 var go = new GameObject("Chunk");
+                go.layer = gameObject.layer;
                 go.transform.SetParent(transform, false);
                 go.isStatic = false;
                 var mesh = new Mesh { name = "ChunkMesh", indexFormat = IndexFormat.UInt32 };
@@ -98,7 +104,14 @@ namespace NU36
                 r.reflectionProbeUsage = ReflectionProbeUsage.Off;
                 r.motionVectorGenerationMode = MotionVectorGenerationMode.ForceNoMotion;
                 r.enabled = false;
-                havuz[i] = new Chunk { nesne = go, renderer = r, mesh = mesh };
+                MeshCollider mc = null;
+                if (carpisici)
+                {
+                    mc = go.AddComponent<MeshCollider>();
+                    mc.sharedMesh = null; // AddComponent picked up the (still empty) render mesh; see Insa
+                    mc.enabled = false;
+                }
+                havuz[i] = new Chunk { nesne = go, renderer = r, mesh = mesh, carpisici = mc };
                 bosta.Add(havuz[i]);
             }
         }
@@ -170,6 +183,8 @@ namespace NU36
                         HazirChunkSayisi--;
                     c.hazir = false;
                     c.renderer.enabled = false;
+                    if (c.carpisici != null)
+                        c.carpisici.enabled = false;
                     bosta.Add(c);
                     bekleyen.Remove(c);
                 }
@@ -211,6 +226,10 @@ namespace NU36
             AraziUretici.ChunkUret(c.koord.x, c.koord.y, chunkBoyutu, hucre, koseler, normaller, renkler, ornek,
                 out float alcak, out float yuksek);
             Mesh mesh = c.mesh;
+            // Detach the collider BEFORE the mesh is cleared and refilled: a collider that still references a mesh
+            // being rebuilt re-cooks it later from its change callback and ends with no mesh (measured in Lab 5).
+            if (c.carpisici != null)
+                c.carpisici.sharedMesh = null;
             mesh.Clear();
             mesh.SetVertices(koseler);
             mesh.SetNormals(normaller);
@@ -221,6 +240,11 @@ namespace NU36
             c.nesne.transform.position = new Vector3(c.koord.x * chunkBoyutu, 0f, c.koord.y * chunkBoyutu);
             c.nesne.name = $"Chunk {c.koord.x},{c.koord.y}";
             c.renderer.enabled = true;
+            if (c.carpisici != null)
+            {
+                c.carpisici.sharedMesh = mesh; // cooks the finished mesh
+                c.carpisici.enabled = true;
+            }
             c.hazir = true;
             HazirChunkSayisi++;
         }

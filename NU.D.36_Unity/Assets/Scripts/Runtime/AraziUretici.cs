@@ -135,7 +135,7 @@ namespace NU36
         static Color Mix(Color32 a, Color32 b, float t) => Color.Lerp(a, b, t);
 
         /// <summary>Face colour from height, steepness and a large-scale patch value (-1..1); all deterministic.</summary>
-        static Color32 Renk(float yukseklik, float yuzeyY, float yama, float titresim)
+        public static Color32 Renk(float yukseklik, float yuzeyY, float yama, float titresim)
         {
             Color c = Mix(Cayir, AcikCayir, Mathf.InverseLerp(-0.4f, 0.6f, yama));
             c = Color.Lerp(c, Mix(Orman, Kuru, Mathf.InverseLerp(-0.2f, 0.2f, yama)), Mathf.InverseLerp(0.1f, 0.7f, Mathf.Abs(yama)) * 0.45f);

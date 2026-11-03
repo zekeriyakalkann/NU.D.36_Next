@@ -18,7 +18,12 @@ namespace NU36.Editor
         // Build Settings order (Rota02 first) is not changed; separate folder keeps the Lab 2 build.
         const string WindowsRota03OutputPath = "../Builds/Windows_Rota03/NU.D.36.exe";
 
+        // Lab 5 player: Rota05 first, in its own folder (earlier builds are kept).
+        const string WindowsRota05OutputPath = "../Builds/Windows_Rota05/NU.D.36.exe";
+
         public static void BuildWindows() => Build(WindowsOutputPath, null);
+
+        public static void BuildWindowsRota05() => Build(WindowsRota05OutputPath, Lab5SceneBuilder.ScenePath);
 
         public static void BuildWindowsRota03() => Build(WindowsRota03OutputPath, Lab3SceneBuilder.ScenePath);
 

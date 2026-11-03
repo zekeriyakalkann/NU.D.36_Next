@@ -96,3 +96,10 @@ Documentation/    this documentation
 
 ## Rota03 terrain
 Menu **NU36 → Lab 3 → Add Terrain To Rota03** (or `-executeMethod NU36.Editor.Lab3TerrainSceneBuilder.Apply` in batch mode; re-runnable, touches only Rota03). The terrain is generated at runtime when Rota03 starts, no button is needed. Details: `Lab3_Terrain_Implementation.md`.
+
+## Lab 5 scene (Rota05)
+Menu **NU36 → Lab 5 → Create Rota05 Scene**, or `-executeMethod NU36.Editor.Lab5SceneBuilder.Create`. It sets up the five layers and the collision matrix (**NU36 → Lab 5 → Set Up Layers And Physics** does only that), creates the prefabs in `Assets/Lab5/` (kept if they exist), copies Rota04Hud to Rota05 (refuses to overwrite an existing Rota05) and appends it to Build Settings. Details: `Lab5_Implementation.md`.
+
+Lab 5 player (Rota05 first): `-executeMethod NU36.Editor.BuildCommands.BuildWindowsRota05` → `Builds/Windows_Rota05/NU.D.36.exe`. Keys: W/S pitch, A/D roll, Q/E yaw, ↑/↓ throttle, Space bomb, R restart after the end.
+
+Viewpoint images of Rota05 (explicit test, not part of the normal run): `-runTests -testPlatform PlayMode -testFilter Lab5GorselKayit` → `Logs/lab5/gorsel/`. Terrain height map used for the layout: **NU36 → Lab 5 → Write Terrain Height Map** → `Logs/lab5/arazi_haritasi.txt`.
