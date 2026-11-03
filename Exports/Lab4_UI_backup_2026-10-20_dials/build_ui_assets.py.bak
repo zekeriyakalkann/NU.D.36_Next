@@ -1,0 +1,292 @@
+"""NU.D.36 steampunk UI sprites, built procedurally in Blender (Lab 4 phase 3).
+
+Usage:
+  blender.exe --background --factory-startup --python build_ui_assets.py -- <asset> <output_dir> [blend_dir]
+asset: hud | dials | needle | plate | knob | compass | targets | buttons | score | menu | all (menu runs separately)
+
+Every asset is a transparent orthographic render (except the compass ribbon and the menu background, which are opaque).
+Names, sizes and alpha rules follow Lab4UiAssets.Specs. Typography: Blender's bundled Inter font (SIL OFL).
+"""
+import math
+import os
+import sys
+
+import bpy
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import ui_common as U  # noqa: E402
+from ui_common import (P, PX, bar, circle_points, disc, material, new_scene, pol, prism, radial_bar, render,
+                       rivet, ring, rrect, rrect_points, screw, standard_materials, strip, text, write_blend)
+
+SPEED_MAX = 50.0   # m/s dial range (Lab 3 speeds are 8-42 m/s)
+ALT_MAX = 500.0    # m dial range
+SWEEP0, SWEEP1 = -135.0, 135.0
+
+
+def dial_face(cx, cy, M, vmax, major, minor, labels, label_fmt, caption, unit, red_from=None):
+    """One dial (500 px bezel). Needle pivot is the dial centre; value v is at angle -135 + v/vmax*270 degrees."""
+    ring(cx, cy, 250, 196, 0.05, M["brass"], z0=0.02, name="Bezel")
+    ring(cx, cy, 204, 190, 0.075, M["steel"], z0=0.02, name="Lip")
+    disc(cx, cy, 200, 0.02, M["paper"], z0=0.0, bevel=0.0005, name="Face")
+    for k in range(4):
+        sx, sy = pol(cx, cy, 224, 45 + 90 * k)
+        screw(sx, sy, 13, M["brass_bright"], M["ink"], 20 + 40 * k, z0=0.1)
+    n_min = int(round(vmax / minor))
+    for i in range(n_min + 1):
+        v = i * minor
+        t = SWEEP0 + v / vmax * (SWEEP1 - SWEEP0)
+        is_major = abs((v / major) - round(v / major)) < 1e-6
+        if is_major:
+            radial_bar(cx, cy, t, 150, 186, 6.5, 0.006, M["ink"], 0.02, "Major")
+        else:
+            radial_bar(cx, cy, t, 166, 186, 3.2, 0.006, M["ink"], 0.02, "Minor")
+    for i, lab in enumerate(labels):
+        t = SWEEP0 + (i * major) / vmax * (SWEEP1 - SWEEP0)
+        x, y = pol(cx, cy, 118, t)
+        text(label_fmt(lab), x, y, 40, M["ink"], 0.021)
+    if red_from is not None:
+        ring(cx, cy, 196, 189, 0.007, M["red"], z0=0.02, t0=SWEEP0 + red_from / vmax * 270, t1=SWEEP1, name="RedZone")
+    text(caption, cx, cy + 66, 30, M["ink"], 0.021)
+    text(unit, cx, cy + 104, 24, M["ink"], 0.021)
+    disc(cx, cy, 8, 0.01, M["steel"], z0=0.02, name="Pin")
+
+
+def build_dials(M):
+    new_scene(1024, 512)
+    dial_face(256, 256, M, SPEED_MAX, 10, 2, range(0, 51, 10), lambda v: str(v), "HIZ", "M/S", red_from=42)
+    dial_face(768, 256, M, ALT_MAX, 100, 20, range(0, 501, 100), lambda v: str(v // 100), "IRTIFA", "x100 M")
+
+
+def build_needle(M):
+    new_scene(512, 512)
+    cx = cy = 256
+    prism([(cx - 10, cy + 66), (cx + 10, cy + 66), (cx + 15, cy), (cx + 3, cy - 236), (cx - 3, cy - 236), (cx - 15, cy)],
+          0.05, M["red"], z0=0.0, bevel=0.003, name="Needle")
+    bar(cx, cy - 120, 220, 2.4, 90, 0.012, M["brass_bright"], z0=0.05, bevel=0.0004, name="Highlight")
+    disc(cx, cy + 66, 15, 0.06, M["brass"], z0=0.0, name="Counterweight")
+    disc(cx, cy, 36, 0.09, M["brass"], z0=0.05, bevel=0.004, name="Hub")
+    ring(cx, cy, 36, 28, 0.03, M["steel"], z0=0.14, name="HubRing")
+    screw(cx, cy, 15, M["brass_bright"], M["ink"], 40, z0=0.14)
+
+
+def build_knob(M):
+    new_scene(512, 512)
+    cx = cy = 256
+    rrect(cx, cy, 380, 170, 28, 0.05, M["brass"], z0=0.0, bevel=0.004, name="Carriage")
+    rrect(cx, cy, 340, 132, 20, 0.02, M["steel"], z0=0.05, bevel=0.002, name="Inset")
+    screw(cx - 160, cy, 12, M["brass_bright"], M["ink"], 30, z0=0.07)
+    screw(cx + 160, cy, 12, M["brass_bright"], M["ink"], 130, z0=0.07)
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=64, ring_count=32, radius=108 * PX, location=P(cx, cy, 0.22))
+    ball = bpy.context.active_object
+    ball.name = "Ball"
+    ball.data.materials.append(M["red"])
+    bpy.ops.object.shade_smooth()
+    ring(cx, cy, 116, 100, 0.035, M["brass"], z0=0.10, name="Collar")
+    disc(cx, cy, 36, 0.02, M["brass_bright"], z0=0.31, bevel=0.003, name="Cap")
+    screw(cx, cy, 14, M["brass"], M["ink"], 60, z0=0.33)
+
+
+def build_plate(M):
+    new_scene(256, 1024)
+    rrect(128, 512, 244, 1012, 30, 0.05, M["brass"], z0=0.0, bevel=0.004, name="Frame")
+    rrect(128, 512, 216, 984, 22, 0.02, M["wood"], z0=0.05, bevel=0.002, name="Wood")
+    rrect(100, 512, 62, 830, 31, 0.012, M["dark"], z0=0.07, bevel=0.002, name="SlotRecess")
+    rrect(100, 512, 66, 836, 33, 0.03, M["steel"], z0=0.05, bevel=0.003, name="SlotBorder").location.z -= 0.0
+    rrect(100, 512, 52, 820, 26, 0.012, M["dark"], z0=0.081, bevel=0.0015, name="SlotTrack")
+    bar(100, 512, 4, 790, 0, 0.004, M["steel"], z0=0.093, bevel=0.0003, name="Rail")
+    for i in range(11):
+        y = 912 - i * 80
+        long_ = i in (0, 5, 10)
+        bar(146 + (8 if long_ else 0), y, 30 if long_ else 18, 5 if long_ else 3, 0, 0.008, M["cream"], 0.072, 0.0005, "Tick")
+    for i, lab in ((0, "0"), (5, "50"), (10, "100")):
+        text(lab, 236, 912 - i * 80, 24, M["cream"], 0.073, align="RIGHT")
+    text("GAZ", 128, 52, 30, M["cream"], 0.073)
+    for (x, y, a) in ((38, 40, 20), (218, 40, 110), (38, 984, 60), (218, 984, 150)):
+        screw(x, y, 11, M["brass_bright"], M["ink"], a, z0=0.07)
+
+
+def build_compass(M):
+    """1536 x 128 ribbon, seamless: 360 degrees across the width, North at the left edge (u = heading / 360).
+    Items are generated for three periods so the edges continue into each other; the camera sees the middle one."""
+    W, H = 1536, 128
+    new_scene(W, H, opaque=True, sun=2.2, shadows=True, engine="CYCLES")
+    ppd = W / 360.0
+    ink, cream = M["ink"], M["cream"]
+    # materials without low-frequency wear so the strip tiles without a visible step across the wrap seam
+    leather = material("LeatherFlat", (0.06, 0.034, 0.024), 0.0, 0.5, bump=0.5, bump_scale=140)
+    brass = material("BrassFlat", (0.66, 0.45, 0.18), 1.0, 0.36, bump=0.1)
+    prism([(-W - 5, -5), (2 * W + 5, -5), (2 * W + 5, H + 5), (-W - 5, H + 5)], 0.03, leather, z0=0.0, bevel=0.0, name="Leather")
+    prism([(-W - 5, 0), (2 * W + 5, 0), (2 * W + 5, 12), (-W - 5, 12)], 0.05, brass, z0=0.03, bevel=0.002, name="RailTop")
+    prism([(-W - 5, H - 12), (2 * W + 5, H - 12), (2 * W + 5, H + 1), (-W - 5, H + 1)], 0.05, brass, z0=0.03, bevel=0.002, name="RailBottom")
+    names = {0: "N", 45: "NE", 90: "E", 135: "SE", 180: "S", 225: "SW", 270: "W", 315: "NW"}
+    for k in (-1, 0, 1):
+        for d in range(0, 360, 5):
+            x = (d * ppd) + k * W
+            if d % 45 == 0:
+                bar(x, 36, 24, 4.5, 90, 0.012, cream, 0.03, 0.0006, "Tick45")
+            elif d % 15 == 0:
+                bar(x, 32, 16, 3.2, 90, 0.01, cream, 0.03, 0.0005, "Tick15")
+            else:
+                bar(x, 29, 9, 2.2, 90, 0.008, brass, 0.03, 0.0004, "Tick5")
+        for d in range(0, 360, 15):
+            x = d * ppd + k * W
+            if d % 45 == 0:
+                text(names[d], x, 84, 46 if d % 90 == 0 else 36, M["red"] if d == 0 else cream, 0.031)
+            else:
+                text("%03d" % d, x, 84, 24, cream, 0.031)
+
+
+def build_targets(M):
+    new_scene(1024, 1024)
+    dark, br, red, olive = M["dark"], M["brass_bright"], M["red"], M["olive"]
+
+    def backed_ring(cx, cy, ro, ri, mat):
+        ring(cx, cy, ro + 5, ri - 5, 0.01, dark, z0=0.0, name="RingShadow")
+        ring(cx, cy, ro, ri, 0.035, mat, z0=0.01, name="Ring")
+
+    def backed_bar(cx, cy, l, w, a, mat):
+        bar(cx, cy, l + 10, w + 10, a, 0.01, dark, 0.0, 0.0005, "BarShadow")
+        bar(cx, cy, l, w, a, 0.035, mat, 0.01, 0.001, "Bar")
+
+    # 1) aiming reticle
+    cx, cy = 256, 256
+    backed_ring(cx, cy, 128, 114, br)
+    for a, (dx, dy) in ((0, (0, -1)), (90, (1, 0)), (180, (0, 1)), (270, (-1, 0))):
+        backed_bar(cx + dx * 150, cy + dy * 150, 90, 14, 90 if dx == 0 else 0, br)
+    disc(cx, cy, 9, 0.04, br, z0=0.01, name="Dot")
+    # 2) locked target: four red corner brackets
+    cx, cy = 768, 256
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            x, y = cx + sx * 130, cy + sy * 130
+            backed_bar(x - sx * 38, y, 90, 16, 0, red)
+            backed_bar(x, y - sy * 38, 90, 16, 90, red)
+    backed_ring(cx, cy, 24, 14, red)
+    # 3) objective marker: diamond
+    cx, cy = 256, 768
+    dm = [(cx, cy - 150), (cx + 150, cy), (cx, cy + 150), (cx - 150, cy)]
+    strip([(x, y) for x, y in dm], 24, 0.01, dark, z0=0.0, closed=True, name="DiamondShadow")
+    strip([(x, y) for x, y in dm], 14, 0.035, br, z0=0.01, closed=True, name="Diamond")
+    prism([(cx, cy - 40), (cx + 34, cy + 28), (cx - 34, cy + 28)], 0.03, red, z0=0.01, bevel=0.002, name="Arrow")
+    # 4) base marker: ring with up-triangle on olive plate
+    cx, cy = 768, 768
+    disc(cx, cy, 128, 0.02, olive, z0=0.0, name="BasePlate")
+    backed_ring(cx, cy, 148, 132, br)
+    prism([(cx, cy - 78), (cx + 66, cy + 52), (cx - 66, cy + 52)], 0.035, M["cream"], z0=0.02, bevel=0.003, name="BaseArrow")
+    bar(cx, cy + 82, 120, 14, 0, 0.03, M["cream"], 0.02, 0.001, "BaseBar")
+
+
+def build_buttons(M):
+    new_scene(768, 1024)
+    states = [
+        ("normal", M["brass"], M["leather"], 0.0, 0.0),
+        ("hover", M["brass_bright"], M["olive"], 0.0, 0.0),
+        ("pressed", material("BrassDark", (0.50, 0.33, 0.13), 1.0, 0.45, wear=(0.15, 0.08, 0.03)), M["dark"], -0.012, 0.0),
+        ("disabled", M["grey"], M["steel"], 0.0, 0.0),
+    ]
+    for i, (name, frame, face, dz, _) in enumerate(states):
+        cy = 128 + 256 * i
+        rrect(384, cy, 744, 216, 38, 0.05 + dz, frame, z0=0.0, bevel=0.005, name="Frame_" + name)
+        rrect(384, cy, 692, 164, 26, 0.012, M["dark"], z0=0.05 + dz, bevel=0.002, name="Recess_" + name)
+        rrect(384, cy, 676, 148, 20, 0.02, face, z0=0.062 + dz, bevel=0.003, name="Face_" + name)
+        sm = M["brass_bright"] if name != "disabled" else M["grey"]
+        for sx in (-1, 1):
+            screw(384 + sx * 334, cy, 11, sm, M["ink"], 30 if sx < 0 else 120, z0=0.07 + dz)
+        if name == "hover":
+            bar(384, cy - 66, 600, 3, 0, 0.004, M["brass_bright"], 0.082, 0.0003, "Glint")
+
+
+def build_score(M):
+    new_scene(1024, 1280)
+    rrect(512, 640, 1016, 1272, 46, 0.05, M["brass"], z0=0.0, bevel=0.005, name="Frame")
+    rrect(512, 640, 964, 1220, 34, 0.02, M["leather"], z0=0.05, bevel=0.003, name="Leather")
+    rrect(512, 150, 880, 150, 24, 0.03, M["brass"], z0=0.07, bevel=0.004, name="HeaderPlate")
+    rrect(512, 150, 836, 108, 16, 0.012, M["steel"], z0=0.10, bevel=0.002, name="HeaderInset")
+    rows, top, rh = 10, 260, 96
+    for i in range(rows):
+        y = top + rh * i + rh / 2
+        rrect(512, y, 880, rh - 4, 6, 0.012, M["paper"] if i % 2 == 0 else material("PaperAlt%d" % i, (0.74, 0.65, 0.47), 0.0, 0.85, wear=(0.52, 0.43, 0.29), wear_scale=9, bump=0.05), z0=0.07, bevel=0.001, name="Row")
+    for x in (172, 572, 772):
+        bar(x, top + rh * rows / 2, rh * rows, 4, 90, 0.008, M["ink"], 0.083, 0.0004, "ColLine")
+    for i in range(rows + 1):
+        bar(512, top + rh * i, 880, 3, 0, 0.008, M["ink"], 0.083, 0.0004, "RowLine")
+    for (x, y, a) in ((56, 56, 20), (968, 56, 110), (56, 1224, 60), (968, 1224, 150), (92, 150, 30), (932, 150, 120)):
+        screw(x, y, 12, M["brass_bright"], M["ink"], a, z0=0.08)
+
+
+def build_hud(M):
+    new_scene(1920, 1080)
+    body = [(0, 1080), (0, 600), (400, 600), (570, 915), (1350, 915), (1520, 600), (1920, 600), (1920, 1080)]
+    prism(body, 0.05, M["olive"], z0=0.0, bevel=0.004, name="Body")
+    trim = [(0, 604), (400, 604), (572, 913), (1348, 913), (1520, 604), (1920, 604)]
+    strip(trim, 16, 0.05, M["brass"], z0=0.05, name="Trim")
+    # centre leather inlay with stitching
+    rrect(960, 1008, 640, 100, 18, 0.025, M["leather"], z0=0.05, bevel=0.003, name="Inlay")
+    rrect(960, 1008, 670, 124, 24, 0.012, M["brass"], z0=0.05, bevel=0.003, name="InlayFrame").location.z -= 0.0
+    rrect(960, 1008, 640, 100, 18, 0.025, M["leather"], z0=0.062, bevel=0.003, name="Inlay2")
+    for i in range(32):
+        x = 660 + i * 19.5
+        bar(x, 975, 10, 2.2, 0, 0.004, M["cream"], 0.088, 0.0003, "Stitch")
+        bar(x, 1041, 10, 2.2, 0, 0.004, M["cream"], 0.088, 0.0003, "Stitch")
+    # dial sockets (dial sprites sit on top: 1024x512 dial sheet scaled to about 0.58)
+    for cx in (200, 1720):
+        ring(cx, 830, 168, 148, 0.07, M["brass"], z0=0.05, name="SocketRing")
+        disc(cx, 830, 150, 0.01, M["dark"], z0=0.05, bevel=0.0005, name="SocketDark")
+        for k in range(4):
+            sx, sy = pol(cx, 830, 184 - 6, 45 + 90 * k)
+            screw(sx, sy, 9, M["brass_bright"], M["ink"], 20 + 40 * k, z0=0.1)
+    # rivets along the trim
+    for x in range(620, 1320, 70):
+        rivet(x, 913, 6, M["brass_bright"], 0.1)
+    for (x0, y0, x1, y1) in ((415, 640, 560, 880), (1505, 640, 1360, 880)):
+        for s in range(4):
+            t = (s + 0.5) / 4
+            rivet(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, 6, M["brass_bright"], 0.1)
+    for x in (40, 1880):
+        rivet(x, 640, 7, M["brass_bright"], 0.1)
+        rivet(x, 1040, 7, M["brass_bright"], 0.1)
+    text("NU.D.36", 960, 1008, 30, M["cream"], 0.09)
+
+
+BUILD = {"dials": ("gosterge-kadranlari", build_dials), "needle": ("gosterge-ibre", build_needle),
+         "knob": ("gaz-kolu-topuz", build_knob), "plate": ("gaz-kolu-plakasi", build_plate),
+         "compass": ("pusula-seridi", build_compass), "targets": ("hedef-isaretleri", build_targets),
+         "buttons": ("dugme-seti", build_buttons), "score": ("puan-tablosu", build_score), "hud": ("hud-cerceve", build_hud)}
+
+
+def main():
+    argv = sys.argv[sys.argv.index("--") + 1:]
+    asset, outdir = argv[0], os.path.abspath(argv[1])
+    blend_dir = os.path.abspath(argv[2]) if len(argv) > 2 else None
+    names = list(BUILD) if asset == "all" else asset.split(",")
+    os.makedirs(outdir, exist_ok=True)
+    for a in names:
+        fname, fn = BUILD[a]
+        U.bpy.ops.wm.read_factory_settings(use_empty=True)
+        M = None
+        # materials need a fresh datablock set per scene, so build them after new_scene inside fn
+        orig_new_scene = U.new_scene
+        holder = {}
+
+        def new_scene_with_mats(*args, **kw):
+            sc = orig_new_scene(*args, **kw)
+            holder["M"] = standard_materials()
+            return sc
+        globals()["new_scene"] = new_scene_with_mats
+        # run builder: it calls new_scene first, then needs M -> pass lazily
+        sc_holder = {}
+        def run():
+            # call builder with a proxy that resolves M after new_scene
+            class Lazy(dict):
+                def __getitem__(self, k):
+                    return holder["M"][k]
+            fn(Lazy())
+        run()
+        globals()["new_scene"] = orig_new_scene
+        render(os.path.join(outdir, fname + ".png"))
+        if blend_dir:
+            write_blend(os.path.join(blend_dir, "ui_" + fname + ".blend"))
+        print("BUILT", fname)
+
+
+main()

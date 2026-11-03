@@ -1,0 +1,1 @@
+Backup before the flight-model work (2026-10-20). Restore: copy UcusKontrol.cs and TakipKamerasi.cs to NU.D.36_Unity/Assets/Scripts/Runtime/ and Rota04Hud.unity to NU.D.36_Unity/Assets/Scenes/. Pre-change measurements: Logs/flight/probe_before_changes.txt

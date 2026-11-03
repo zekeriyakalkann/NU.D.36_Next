@@ -1,0 +1,2 @@
+Backup taken before the menu background was reworked (left third was mid-grey, mean luma 0.53).
+Restore: copy menu-arkaplan.png to Exports/Lab4_UI/ and NU.D.36_Unity/Assets/UI/, ui_menu-arkaplan.blend to Blender/UI/, build_menu_background.py.bak to Tools/Blender/ui/build_menu_background.py.
