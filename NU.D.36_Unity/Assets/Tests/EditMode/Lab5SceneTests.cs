@@ -53,11 +53,14 @@ namespace NU36.Tests
         }
 
         [Test]
-        public void Rota05_IsLastInBuildSettings()
+        public void Rota05_IsInBuildSettings_AfterRota04Hud()
         {
+            // Later labs append their scenes after Rota05 (Lab 6: Bolum3_GriKutu), so only the order is checked.
             EditorBuildSettingsScene[] s = EditorBuildSettings.scenes;
-            Assert.AreEqual(Path5, s.Last().path);
-            Assert.IsTrue(s.Last().enabled);
+            int i = System.Array.FindIndex(s, x => x.path == Path5);
+            Assert.GreaterOrEqual(i, 0);
+            Assert.IsTrue(s[i].enabled);
+            Assert.Greater(i, System.Array.FindIndex(s, x => x.path == "Assets/Scenes/Rota04Hud.unity"));
             CollectionAssert.IsSubsetOf(new[] { "Assets/Scenes/Rota02.unity", "Assets/Scenes/Rota03.unity", "Assets/Scenes/Rota04.unity",
                 "Assets/Scenes/Rota04Hud.unity" }, s.Select(x => x.path).ToArray());
         }

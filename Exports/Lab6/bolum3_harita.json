@@ -1,0 +1,17 @@
+{
+  "surum": "0.1",
+  "sutun": 12, "satir": 9, "kare_m": 200,
+  "pist": ["B8", "C8", "D8"],
+  "nehir": ["I1", "I2", "I3", "I4", "H5", "I5", "J5", "J6", "J7", "J8", "J9"],
+  "kopru": ["H5", "I5", "J5"],
+  "tepeler": ["E4", "F7", "G7"],
+  "isildaklar": [{"kare": "F4", "yon": 135}, {"kare": "K5", "yon": 270}, {"kare": "H7", "yon": 0}],
+  "ucaksavarlar": ["G4", "K4", "I7"],
+  "ses_dinleyici": "H3",
+  "bulutlar": ["E5", "F5", "G5"],
+  "baslangic": "C8", "baslangic_yonu": 45,
+  "yol1": ["C8", "D8", "E8", "F8", "G8", "H8", "H7", "H6", "H5"],
+  "yol2": ["C8", "D7", "E6", "F5", "G5", "H5"],
+  "isin_kare": 6, "ucaksavar_yaricap_kare": 4, "ses_yaricap_kare": 5,
+  "tek_kural": "E5, F5 ve G5 bulut karesidir: Orta irtifadaki uçağı bu 3 karede ışıldak yakalayamaz."
+}

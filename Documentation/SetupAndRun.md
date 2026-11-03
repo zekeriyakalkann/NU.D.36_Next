@@ -103,3 +103,13 @@ Menu **NU36 → Lab 5 → Create Rota05 Scene**, or `-executeMethod NU36.Editor.
 Lab 5 player (Rota05 first): `-executeMethod NU36.Editor.BuildCommands.BuildWindowsRota05` → `Builds/Windows_Rota05/NU.D.36.exe`. Keys: W/S pitch, A/D roll, Q/E yaw, ↑/↓ throttle, Space bomb, R restart after the end.
 
 Viewpoint images of Rota05 (explicit test, not part of the normal run): `-runTests -testPlatform PlayMode -testFilter Lab5GorselKayit` → `Logs/lab5/gorsel/`. Terrain height map used for the layout: **NU36 → Lab 5 → Write Terrain Height Map** → `Logs/lab5/arazi_haritasi.txt`.
+
+## Lab 6 grey box (Bolum3_GriKutu)
+Menu **NU36 → Lab 6 → Create Bolum3_GriKutu Scene** (`-executeMethod NU36.Editor.Lab6SceneBuilder.Create`): copies Rota05 (refuses to overwrite), builds the grey box from `Bolum3Harita`, appends it to Build Settings and writes `Exports/Lab6/bolum3_harita.json`. Player: `-executeMethod NU36.Editor.BuildCommands.BuildWindowsGriKutu` → `Builds/Windows_Bolum3_GriKutu/`.
+
+Printable paper map (after the JSON exists):
+```powershell
+& $blender --background --factory-startup --disable-autoexec --python Tools\Blender\bolum3\render_harita.py -- Exports\Lab6\bolum3_harita.json Exports\Lab6\bolum3_harita_v0.1.png
+# empty grid: add  bos  after the output path
+```
+Grey box images: `-runTests -testPlatform PlayMode -testFilter Lab6GorselKayit` → `Logs/lab6/gorsel/`. Design and results: `Lab6_Bolum3_Tasarim.md`; GDD draft: `Lab6_GDD_Taslagi.md`.

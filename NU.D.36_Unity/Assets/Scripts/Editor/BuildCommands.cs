@@ -25,6 +25,9 @@ namespace NU36.Editor
 
         public static void BuildWindowsRota05() => Build(WindowsRota05OutputPath, Lab5SceneBuilder.ScenePath);
 
+        // Lab 6 grey box player: Bolum3_GriKutu first.
+        public static void BuildWindowsGriKutu() => Build("../Builds/Windows_Bolum3_GriKutu/NU.D.36.exe", Lab6SceneBuilder.ScenePath);
+
         public static void BuildWindowsRota03() => Build(WindowsRota03OutputPath, Lab3SceneBuilder.ScenePath);
 
         static void Build(string outputPath, string firstScene)

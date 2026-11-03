@@ -134,3 +134,18 @@ Batch mode, Unity 6000.6.4f1. Logs and results in `Logs/lab5/`.
 What the tests prove and what they do not: requirement mapping in `Lab5_Implementation.md` §2. Visual record (camera renders, examined): hills after the terrain-following fix, dumps, gun, sound locator, the view from gun 2 blocked by Tepe 3, a 60° dive (`Logs/lab5/gorsel/`). Measurement for Step 05: `Logs/lab5/olcum_gorus.txt` (Stopwatch in batch mode, not the Profiler).
 
 NOT TESTED: a hand-flown full level and its balance, real keyboard presses of Space/R, the Scene-view Gizmo look, a crash on a hill slope, the Profiler task (user).
+
+## 7. Lab 6 (Bolum3_GriKutu), 2026-11-03
+
+Batch mode, Unity 6000.6.4f1. Logs and results in `Logs/lab6/`.
+
+| Suite | Result |
+|---|---|
+| EditMode (whole project) | **210/210 passed** (193 + 17 `Lab6Tests`) |
+| PlayMode (whole project) | **92 passed, 2 skipped** (89 + 3 `Lab6PlayTests`; skipped = the two explicit image tests) |
+| Earlier scenes | Rota02 … Rota05 MD5 unchanged (test) |
+| Windows player Bolum3_GriKutu | build succeeded; ran windowed 8 s: stopwatch, HUD, grey boxes visible; no exceptions (`Logs/lab6/player/`) |
+| Paper maps (Blender) | rendered and examined: `Exports/Lab6/bolum3_harita_v0.1.png`, `bolum3_bos_harita.png` (first render had the factory cube over A1; fixed) |
+| Flight timing | Route 1 (60 m) back at 49.5 s = 3.3 turns, Route 2 (200 m) back at 41.0 s = 2.7 turns (`Logs/lab6/sure_olcumu.txt`); first attempt crashed into the F7–G7 ridge when the test autopilot cut a corner at 20°/s, rerun at 30°/s |
+
+NOT TESTED / USER: paper play (Steps 01, 03, 04), a hand-flown grey box run, the GDD in the Word template.
