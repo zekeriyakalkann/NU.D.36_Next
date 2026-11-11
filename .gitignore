@@ -29,6 +29,8 @@ crashlytics-buildid.txt
 # Workspace outputs
 /Builds/
 /Logs/
+# Raw asset downloads (the copies in use live in NU.D.36_Unity/Assets/Bolum4; sources in Assets/VARLIKLAR.md)
+/Indirilenler/
 
 # Local Claude Code settings
 .claude/settings.local.json
