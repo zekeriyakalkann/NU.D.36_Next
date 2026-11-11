@@ -21,7 +21,7 @@ namespace NU36
             return h ^ (h >> 16);
         }
 
-        static float Rastgele01(int x, int z, uint tohum) => (Hash(x, z, tohum) & 0xFFFFFFu) / 16777215f;
+        public static float Rastgele01(int x, int z, uint tohum) => (Hash(x, z, tohum) & 0xFFFFFFu) / 16777215f;
 
         static float Fade(float t) => t * t * t * (t * (t * 6f - 15f) + 10f);
 
@@ -53,7 +53,8 @@ namespace NU36
             return Mathf.Lerp(Mathf.Lerp(n00, n10, u), Mathf.Lerp(n01, n11, u), v) * 0.8f;
         }
 
-        static float Fbm(float x, float z, int oktav, uint tohum)
+        /// <summary>Fractal sum of gradient noise, roughly in -1..1 (public since Lab 7, which reuses it for the night map).</summary>
+        public static float Fbm(float x, float z, int oktav, uint tohum)
         {
             float toplam = 0f, genlik = 1f, norm = 0f;
             for (int i = 0; i < oktav; i++)

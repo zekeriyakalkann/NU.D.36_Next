@@ -15,6 +15,12 @@ namespace NU36
         [SerializeField] UcusKontrol ucak;
         [SerializeField] Radar goz;
         [SerializeField] SesDinleyici kulak;
+        [Header("Gece (Lab 7)")]
+        [Tooltip("Night: the eye counts only while one of these searchlights holds the aircraft in its beam, or inside geceGorusu. " +
+                 "Empty = daylight (Labs 5–6): the eye alone is enough.")]
+        [SerializeField] Isildak[] isildaklar;
+        [Tooltip("Night: distance (m) within which the crew sees the aircraft without a searchlight.")]
+        [SerializeField, Min(0f)] float geceGorusu = 250f;
         [Header("Atış")]
         [SerializeField] Mermi mermiOn;
         [Tooltip("Muzzle; also turned towards the aim point.")]
@@ -30,6 +36,10 @@ namespace NU36
         [SerializeField] LayerMask vurulacak;
         [Tooltip("false = the rounds use the broken end-point check (Step 03 experiment).")]
         [SerializeField] bool supurme = true;
+        [Tooltip("Lab 8: does not fire at an aircraft more than this many metres above the gun; 0 = no ceiling (Labs 5–7).")]
+        [SerializeField, Min(0f)] float atesTavani;
+        [Tooltip("Lab 8: side of the rounds (Notr = Labs 5–7).")]
+        [SerializeField] Taraf taraf = Taraf.Notr;
         [Header("İrtifa bandı (m, yerden)")]
         [SerializeField, Min(0f)] float cokAlcak = 15f;
         [SerializeField, Min(0f)] float etkiliTavan = 460f;
@@ -44,8 +54,27 @@ namespace NU36
         public SesDinleyici Kulak { get => kulak; set => kulak = value; }
         public float MermiHizi { get => mermiHizi; set => mermiHizi = Mathf.Max(1f, value); }
         public bool Supurme { get => supurme; set => supurme = value; }
+        public float AtesTavani { get => atesTavani; set => atesTavani = Mathf.Max(0f, value); }
+        public Taraf Taraf { get => taraf; set => taraf = value; }
+        public float Menzil { get => menzil; set => menzil = Mathf.Max(0f, value); }
+        /// <summary>Lab 8: the aircraft is above the ceiling (the gun holds fire).</summary>
+        public bool TavanUstunde => atesTavani > 0f && ucak != null && ucak.transform.position.y - transform.position.y > atesTavani;
+        /// <summary>Lab 8: the gun sees the aircraft in range under its ceiling (it is firing or about to).</summary>
+        public bool AtesEdiyor => isActiveAndEnabled && VeriVar && !TavanUstunde &&
+                                  (Nisan - transform.position).sqrMagnitude <= menzil * menzil;
 
-        public bool GozleGoruyor => goz != null && goz.Goruyor;
+        public bool GozleGoruyor => goz != null && goz.Goruyor && (isildaklar == null || isildaklar.Length == 0 || Aydinlatiliyor());
+
+        /// <summary>Night rule: a searchlight holds the aircraft, or the aircraft is within <c>geceGorusu</c>.</summary>
+        bool Aydinlatiliyor()
+        {
+            foreach (Isildak i in isildaklar)
+                if (i != null && i.Yakaladi)
+                    return true;
+            return ucak != null && (ucak.transform.position - transform.position).sqrMagnitude <= geceGorusu * geceGorusu;
+        }
+
+        public Isildak[] Isildaklar { get => isildaklar; set => isildaklar = value; }
         public bool KulaklaDuyuyor => kulak != null && kulak.Duyuyor;
         public bool VeriVar { get; private set; }
         public Vector3 Nisan { get; private set; }
@@ -89,7 +118,7 @@ namespace NU36
             Vector3 fark = Nisan - cikis;
             if (namlu != null && fark.sqrMagnitude > 1f)
                 namlu.rotation = Quaternion.LookRotation(fark);
-            if (fark.magnitude > menzil || Time.time < sonrakiAtis)
+            if (fark.magnitude > menzil || TavanUstunde || Time.time < sonrakiAtis)
                 return;
             sonrakiAtis = Time.time + atisAraligi;
             Ates(cikis, fark.normalized);
@@ -103,7 +132,7 @@ namespace NU36
             if (sacilma > 0f)
                 yon = Sac(yon, sacilma);
             Mermi m = Instantiate(mermiOn, cikis, Quaternion.LookRotation(yon));
-            m.Ates(yon, mermiHizi, mermiHasari, vurulacak, supurme);
+            m.Ates(yon, mermiHizi, mermiHasari, vurulacak, supurme, taraf);
             AtisSayisi++;
         }
 

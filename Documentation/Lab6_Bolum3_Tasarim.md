@@ -9,8 +9,8 @@ Durum değerleri: IMPLEMENTED, VERIFIED, PARTIALLY VERIFIED, NOT TESTED, BLOCKED
 |---|---|---|
 | 01 Isınma | Kâğıt motoru, 2 × 4 tur, tarayıcıda "3 · Gece" kipi | KULLANICI (kit ve tarayıcı oyunu bende yok) |
 | 02 Tasarım | Harita v0.1, tek kural, iki yol, görev sayfası önerisi (§2) | IMPLEMENTED: veri `Bolum3Harita.cs`, çıktı `Exports/Lab6/bolum3_harita_v0.1.png`; tasarım kuralları testli (`Lab6Tests`) |
-| 03 Sessiz gözlemci | Eşe oynatma, ≥ 6 satırlık form, 3 soru | KULLANICI (§3'te test sorusu önerisi) |
-| 04 Tek değişiklik | v0.2, yeniden oynatma | KULLANICI (§3'te aday değişiklikler) |
+| 03 Sessiz gözlemci | Eşe oynatma, ≥ 6 satırlık form, 3 soru | KULLANICI (§3'te test sorusu önerisi; basılı form: `Exports/Lab6/kagit/bolum3_kagit_formlari.html`) |
+| 04 Tek değişiklik | v0.2, yeniden oynatma | KULLANICI (§3'te aday değişiklikler; yineleme kaydı aynı HTML'de) |
 | 05 Gri kutu | `Bolum3_GriKutu` sahnesi, ölçüler föydeki gibi, uçuş ve süre ölçümü | VERIFIED (§4) |
 | 06 Laboratuvar GDD'si | Ölçülmüş sayılarla taslak: `Lab6_GDD_Taslagi.md` | IMPLEMENTED (taslak; Word şablonuna aktarmak KULLANICI) |
 | Bonus | — | Yapılmadı |
@@ -90,3 +90,7 @@ Bu ölçüm hakkında iki not:
 - Kit, tarayıcı oyunu ve GDD şablonu yok: hareket kuralları, son tur, can ve bomba sayıları kâğıt tasarımda öneri olarak duruyor.
 - Gri kutuda gece, ışık ve köprü çöküşü yok; bunlar 7. haftanın işi (föy). Işıldaklar ve uçaksavarlar sadece kutu, ateş etmiyor.
 - Hız kadranının yüzü hâlâ 0–50 (Lab 5 notu).
+
+## 6. 7. hafta (2026-11-10)
+Bu harita v0.1, Rota07'de gece seviyesi olarak büyüdü (`Lab7_Implementation.md`). Her öğe kâğıttaki karesinde duruyor (test edildi). v0.2 değişikliği `Bolum3Harita.cs`'de yapılırsa gri kutu ve gece seviyesi aynı veriden yeniden kurulur.
+

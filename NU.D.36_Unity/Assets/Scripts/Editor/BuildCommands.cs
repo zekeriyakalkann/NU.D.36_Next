@@ -30,6 +30,15 @@ namespace NU36.Editor
 
         public static void BuildWindowsRota03() => Build(WindowsRota03OutputPath, Lab3SceneBuilder.ScenePath);
 
+        // Lab 7 night mission player: Rota07 first.
+        public static void BuildWindowsRota07() => Build("../Builds/Windows_Rota07/NU.D.36.exe", Lab7SceneBuilder.ScenePath);
+
+        // Game player: the main menu first (GÖREVE BAŞLA → Rota07, BÖLÜM SEÇ → every lab scene).
+        public static void BuildWindowsOyun() => Build("../Builds/Windows_Oyun/NU.D.36.exe", MenuSceneBuilder.ScenePath);
+
+        // Lab 8: player that starts straight in Bölüm 4 (video recording); Esc → menu still reaches the other levels.
+        public static void BuildWindowsBolum4() => Build("../Builds/Windows_Bolum4/NU.D.36.exe", Lab8SceneBuilder.ScenePath);
+
         static void Build(string outputPath, string firstScene)
         {
             string[] scenes = EditorBuildSettings.scenes

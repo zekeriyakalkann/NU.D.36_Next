@@ -30,6 +30,10 @@ namespace NU36
         [SerializeField, Range(0f, 90f)] float enFazlaEgim = 20f;
         [Tooltip("Height above the ground (metres) the wheels must clear before the next contact counts.")]
         [SerializeField, Min(0f)] float yenidenSilahlanma = 3f;
+        [Tooltip("Lab 7: maximum sink rate at touchdown (m/s). 0 = not checked (Labs 4–6).")]
+        [SerializeField, Min(0f)] float enFazlaDususHizi;
+        [Tooltip("Lab 7: the aircraft starts standing on the ground (wheels down), not in the air.")]
+        [SerializeField] bool yerdeBasla;
 
         /// <summary>Ground height at (x, z). Replaceable, e.g. by tests.</summary>
         public Func<float, float, float> ZeminYuksekligi = (x, z) => AraziUretici.YuzeyYuksekligi(x, z);
@@ -45,6 +49,11 @@ namespace NU36
         public float EnFazlaPitchHatasi { get => enFazlaPitchHatasi; set => enFazlaPitchHatasi = value; }
         public float EnFazlaYatis { get => enFazlaYatis; set => enFazlaYatis = value; }
         public float EnFazlaEgim { get => enFazlaEgim; set => enFazlaEgim = value; }
+        public float EnFazlaDususHizi { get => enFazlaDususHizi; set => enFazlaDususHizi = Mathf.Max(0f, value); }
+        /// <summary>Sink rate (m/s, positive = down) at the last touchdown.</summary>
+        public float SonDususHizi { get; private set; }
+        /// <summary>World position of the last controlled touchdown.</summary>
+        public Vector3 SonInisNoktasi { get; private set; }
         public bool Yerde { get; private set; }
         public bool Cakti { get; private set; }
         public string CakmaNedeni { get; private set; }
@@ -55,13 +64,23 @@ namespace NU36
                 ucus = GetComponent<UcusKontrol>();
             if (ucus == null)
                 Debug.LogError("[InisAlgilayici] UcusKontrol atanmamış; hız okunamıyor.", this);
+            if (yerdeBasla)
+            {
+                Yerde = true;
+                if (ucus != null)
+                    ucus.YerTemasi = true;
+            }
         }
 
         void LateUpdate() => Adim();
 
         /// <summary>Returns null for a controlled landing, otherwise the crash reason.</summary>
-        public string Siniflandir(float hiz, float pitchHatasi, float yatis, float egim)
+        public string Siniflandir(float hiz, float pitchHatasi, float yatis, float egim) => Siniflandir(hiz, pitchHatasi, yatis, egim, 0f);
+
+        /// <summary>As above, also checking the sink rate (m/s, positive = down) when <c>enFazlaDususHizi</c> is set.</summary>
+        public string Siniflandir(float hiz, float pitchHatasi, float yatis, float egim, float dususHizi)
         {
+            if (enFazlaDususHizi > 0f && dususHizi > enFazlaDususHizi) return "sert iniş";
             if (hiz > enFazlaHiz) return "çok hızlı";
             if (pitchHatasi > enFazlaPitchHatasi) return "dik açı";
             if (yatis > enFazlaYatis) return "aşırı yatış";
@@ -74,6 +93,29 @@ namespace NU36
         {
             if (Cakti)
                 return;
+            AdimIc();
+            if (ucus != null && !Cakti)
+                ucus.YerTemasi = Yerde;
+        }
+
+        /// <summary>
+        /// Lab 7: a crash that is not a ground contact (e.g. flying into a structure). Same path as a crash on the ground:
+        /// the aircraft stops and <see cref="Cakildi"/> is raised once.
+        /// </summary>
+        public void Carp(string neden)
+        {
+            if (Cakti)
+                return;
+            Cakti = true;
+            CakmaNedeni = neden;
+            if (ucus != null)
+                ucus.enabled = false;
+            Debug.Log($"[InisAlgilayici] Çakıldı ({neden})");
+            Cakildi?.Invoke(neden);
+        }
+
+        void AdimIc()
+        {
 
             Vector3 p = transform.position;
             float zemin = ZeminYuksekligi(p.x, p.z);
@@ -108,22 +150,24 @@ namespace NU36
 
             float yatis = Mathf.Abs(Mathf.Atan2(transform.right.y, transform.up.y) * Mathf.Rad2Deg);
             float hiz = ucus != null ? ucus.Hiz : 0f;
+            SonDususHizi = ucus != null ? -ucus.DikeyHiz : 0f;
 
-            string neden = Siniflandir(hiz, Mathf.Abs(pitch - egim), yatis, zeminEgimi);
+            string neden = Siniflandir(hiz, Mathf.Abs(pitch - egim), yatis, zeminEgimi, SonDususHizi);
             if (neden != null)
             {
                 Cakti = true;
                 CakmaNedeni = neden;
                 if (ucus != null)
                     ucus.enabled = false; // stop the aircraft
-                Debug.Log($"[InisAlgilayici] Çakıldı ({neden}): hız {hiz:F1}, yunuslama {pitch:F1}, eğim {egim:F1}, yatış {yatis:F1}");
+                Debug.Log($"[InisAlgilayici] Çakıldı ({neden}): hız {hiz:F1}, düşüş {SonDususHizi:F1}, yunuslama {pitch:F1}, eğim {egim:F1}, yatış {yatis:F1}");
                 Cakildi?.Invoke(neden);
             }
             else
             {
                 Yerde = true;
                 transform.position = new Vector3(p.x, zemin + tekerOfseti, p.z);
-                Debug.Log($"[InisAlgilayici] Kontrollü iniş: hız {hiz:F1}, yunuslama {pitch:F1}, yatış {yatis:F1}");
+                SonInisNoktasi = transform.position;
+                Debug.Log($"[InisAlgilayici] Kontrollü iniş: hız {hiz:F1}, düşüş {SonDususHizi:F1}, yunuslama {pitch:F1}, yatış {yatis:F1}");
                 InisYapildi?.Invoke();
             }
         }

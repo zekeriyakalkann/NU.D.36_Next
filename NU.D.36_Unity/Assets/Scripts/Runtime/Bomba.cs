@@ -9,6 +9,10 @@ namespace NU36
     /// ray sweep over each step so a fast bomb cannot pass through the ground. On impact it explodes
     /// (<see cref="Patlama.Yarat"/>). Released below <c>parcaGuvenliIrtifa</c> (120 m), the aircraft is still inside
     /// its own bomb's fragment zone: it takes <c>parcaHasari</c> and the Console says so.
+    /// Lab 7 assist (user request 2026-11-10): <see cref="Gudumle"/> turns it into a guided bomb that flies to a target at
+    /// <c>gudumHizi</c>, turning at most <c>gudumDonusu</c> degrees per second (straight at it on the last stretch), without
+    /// gravity. A guided bomb hurts its own aircraft only if that is within <c>parcaGuvenliIrtifa</c> of the explosion.
+    /// When its target falls before it arrives, it falls freely again.
     /// </summary>
     public class Bomba : MonoBehaviour
     {
@@ -24,6 +28,17 @@ namespace NU36
         [SerializeField, Min(0f)] float parcaGuvenliIrtifa = 120f;
         [SerializeField, Min(0)] int parcaHasari = 40;
         [SerializeField, Min(0.1f)] float omur = 30f;
+        [Header("Güdüm (Lab 7 nişan yardımı)")]
+        [Tooltip("Speed the guided bomb accelerates to (m/s).")]
+        [SerializeField, Min(1f)] float gudumHizi = 160f;
+        [Tooltip("Acceleration towards that speed (m/s²).")]
+        [SerializeField, Min(0f)] float gudumIvmesi = 60f;
+        [Tooltip("Largest turn rate of the guided bomb (degrees/s).")]
+        [SerializeField, Min(1f)] float gudumDonusu = 150f;
+        [Tooltip("Top attack: the guided bomb aims this share of the remaining horizontal distance above the target (capped by " +
+                 "enFazlaYay), so it stays high and dives onto the target at the end instead of skimming the ground.")]
+        [SerializeField, Range(0f, 1f)] float gudumYayi = 0.3f;
+        [SerializeField, Min(0f)] float enFazlaYay = 120f;
 
         Vector3 hiz;
         float yas;
@@ -35,6 +50,17 @@ namespace NU36
         public Vector3 PatlamaNoktasi { get; private set; }
         public float PatlamaYaricapi => patlamaYaricapi;
         public float ParcaGuvenliIrtifa => parcaGuvenliIrtifa;
+        /// <summary>The target a guided bomb flies to (null = free fall).</summary>
+        public Yikilabilir GudumHedefi { get; private set; }
+        public bool Gudumlu => GudumHedefi != null || gudumNoktasi != null;
+        /// <summary>Lab 8: guidance to a point (e.g. the middle of a tank pair) instead of a destroyable target.</summary>
+        System.Func<Vector3> gudumNoktasi;
+
+        /// <summary>Makes this a guided bomb flying to <paramref name="hedef"/> (null = free fall).</summary>
+        public void Gudumle(Yikilabilir hedef) => GudumHedefi = hedef;
+
+        /// <summary>Lab 8: guided flight to a point that may move (read every step).</summary>
+        public void Gudumle(System.Func<Vector3> nokta) => gudumNoktasi = nokta;
 
         /// <summary>Raised once on impact with the explosion point.</summary>
         public event Action<Bomba, Vector3> Patlayinca;
@@ -66,9 +92,24 @@ namespace NU36
             if (Patladi)
                 return true;
 
-            // Yarı örtük (symplectic) Euler: ÖNCE hızı güncelle, SONRA konumu.
-            // Açık Euler'de düşen cisim her adımda biraz geride kalır (4. hafta).
-            hiz += Physics.gravity * dt;
+            // Lab 8 point guidance: proximity fuse — the point may sit on open ground between targets, so explode when
+            // this step would reach it (otherwise the bomb could circle a point it never touches).
+            if (gudumNoktasi != null)
+            {
+                Vector3 hedefNokta = gudumNoktasi();
+                if ((hedefNokta - transform.position).sqrMagnitude <= Mathf.Max(2f, hiz.magnitude * dt) * Mathf.Max(2f, hiz.magnitude * dt))
+                {
+                    Patla(hedefNokta);
+                    return true;
+                }
+            }
+
+            if ((GudumHedefi != null && !GudumHedefi.Yikik) || gudumNoktasi != null)
+                Yonlen(dt);
+            else
+                // Yarı örtük (symplectic) Euler: ÖNCE hızı güncelle, SONRA konumu.
+                // Açık Euler'de düşen cisim her adımda biraz geride kalır (4. hafta).
+                hiz += Physics.gravity * dt;
 
             Vector3 adim = hiz * dt;
 
@@ -84,12 +125,35 @@ namespace NU36
             return false;
         }
 
+        /// <summary>Guided flight: speed up towards gudumHizi and turn the velocity to the target (straight at it when close).</summary>
+        void Yonlen(float dt)
+        {
+            Vector3 fark = (GudumHedefi != null ? GudumHedefi.IsaretNoktasi : gudumNoktasi()) - transform.position;
+            float d = fark.magnitude;
+            if (d < 1e-3f)
+                return;
+            float hizBuyuk = Mathf.MoveTowards(hiz.magnitude, gudumHizi, gudumIvmesi * dt);
+            // Aim above the target while far (top attack), straight at it on the last stretch.
+            float yatay = new Vector2(fark.x, fark.z).magnitude;
+            Vector3 nisan = fark + Vector3.up * Mathf.Min(yatay * gudumYayi, enFazlaYay);
+            Vector3 istenen = d < hizBuyuk * 0.6f ? fark / d : nisan.normalized;
+            Vector3 yon = hiz.sqrMagnitude > 1e-4f ? hiz.normalized : istenen;
+            yon = d < hizBuyuk * 0.6f ? istenen : Vector3.RotateTowards(yon, istenen, gudumDonusu * Mathf.Deg2Rad * dt, 0f);
+            hiz = yon * Mathf.Max(hizBuyuk, 1f);
+        }
+
         void Patla(Vector3 nokta)
         {
             Patladi = true;
             PatlamaNoktasi = nokta;
-            Patlama.Yarat(nokta, patlamaYaricapi, hasar, etkilenen, patlamaOn);
-            if (BirakmaIrtifasi < parcaGuvenliIrtifa)
+            Patlama.Yarat(nokta, patlamaYaricapi, hasar, etkilenen, patlamaOn, sahip != null ? sahip.Taraf : Taraf.Notr);
+            if (Gudumlu)
+            {
+                // A guided bomb explodes far from its aircraft: only an aircraft inside the fragment zone is hurt.
+                if (sahip != null && Vector3.Distance(sahip.transform.position, nokta) < parcaGuvenliIrtifa)
+                    sahip.Vur(parcaHasari);
+            }
+            else if (BirakmaIrtifasi < parcaGuvenliIrtifa)
             {
                 Debug.LogWarning($"[Bomba] {BirakmaIrtifasi:F0} m'den bırakıldı (< {parcaGuvenliIrtifa:F0} m): uçak kendi bombasının parça tesirine yakalandı, {parcaHasari} hasar.");
                 if (sahip != null)

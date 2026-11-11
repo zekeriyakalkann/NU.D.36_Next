@@ -113,3 +113,58 @@ Printable paper map (after the JSON exists):
 # empty grid: add  bos  after the output path
 ```
 Grey box images: `-runTests -testPlatform PlayMode -testFilter Lab6GorselKayit` → `Logs/lab6/gorsel/`. Design and results: `Lab6_Bolum3_Tasarim.md`; GDD draft: `Lab6_GDD_Taslagi.md`.
+
+## Lab 7 night mission (Rota07)
+Menu **NU36 → Lab 7 → Create Rota07 Scene** (`-executeMethod NU36.Editor.Lab7SceneBuilder.Create`): copies Bolum3_GriKutu (refuses to overwrite), deletes the grey box, the old Bölüm 2 roots and the old HUD from the copy, creates the Lab 7 textures, materials, meshes and prefabs in `Assets/Lab7/` (kept if they exist; the 2048² colour map takes about a minute) and builds the level from `GeceHaritasi`. Development helper: **NU36 → Lab 7 → Rebuild Rota07 (delete and create)** (`…Lab7SceneBuilder.YenidenKur`) deletes only Rota07 and the generated Lab 7 materials/prefabs/meshes/volume profile and builds again; `YenidenKurDokularla` also regenerates the textures (needed after a change to the map functions).
+
+Player: `-executeMethod NU36.Editor.BuildCommands.BuildWindowsRota07` → `Builds/Windows_Rota07/NU.D.36.exe`. Keys: W/S nose down/up, A/D roll, Q/E rudder (steering on the ground), ↑/↓ throttle (idle = brakes on the ground), F or B brake (held), K easy flight on/off, Space bomb (guided while a target is locked), T next target, O automatic release on/off, M GPS scale, L landing light, Esc pause menu, R restart after the end.
+
+Tests: `-testFilter NU36.Tests.Lab7` (EditMode: `Lab7Tests`, `Lab7UcusFizigiTests`), `-testFilter NU36.Tests.Lab7PlayTests` (PlayMode; measurements → `Logs/lab7/ucus_olcumu.txt`). Images (explicit): `-testFilter NU36.Tests.Lab7GorselKayit` → `Logs/lab7/gorsel/`. Details: `Lab7_Implementation.md`.
+
+## Main menu, gauges and the Bölüm 3 night level (2026-11-10)
+- **Main menu:**
+  - Build it with **NU36 → Menu → Create AnaMenu Scene** (`-executeMethod NU36.Editor.MenuSceneBuilder.Create`). It refuses to overwrite an existing scene and appends AnaMenu to Build Settings.
+  - Game player with the menu first: `-executeMethod NU36.Editor.BuildCommands.BuildWindowsOyun` → `Builds/Windows_Oyun/NU.D.36.exe`.
+  - Bölüm 4 first (Lab 8 video): `-executeMethod NU36.Editor.BuildCommands.BuildWindowsBolum4` → `Builds/Windows_Bolum4/NU.D.36.exe`. A first build takes over 10 minutes.
+  - In the Editor, open `Assets/Scenes/AnaMenu.unity` and press Play.
+- **Gauges and pause menu in Rota07:** **NU36 → Lab 7 → Add Gauges And Pause Menu To Rota07** (`…Lab7Arayuz.Guncelle`). It is idempotent; a rebuild of Rota07 adds them too.
+- **Assists in Rota07 (easy flight, brake, targeting, GPS):** **NU36 → Lab 7 → Add Flight Assist, Targeting And GPS To Rota07** (`-executeMethod NU36.Editor.Lab7Yardim.Guncelle`). Idempotent: it re-adds `UcusYardimcisi` and `NisanSistemi` with the code defaults and rebuilds the GPS panel; a rebuild of Rota07 adds them too. Tests: `-testFilter NU36.Tests.Lab7YardimTests` (EditMode) and `-testFilter NU36.Tests.Lab7YardimPlayTests` (PlayMode, measurements → `Logs/lab7/yardim_olcumu.txt`). Details: `Lab7_Implementation.md` §11.
+- **Airspeed dial face:**
+
+  ```
+  blender --background --factory-startup --disable-autoexec --python Tools/Blender/ui/build_ui_assets.py -- night_speed Exports/Lab7_UI Blender/UI
+  ```
+
+  This writes `Exports/Lab7_UI/gece-hiz-kadrani.png`. The Rota07 builder imports it into `Assets/Lab7/UI/` when missing.
+- **Night level on the paper map:**
+  - After a change to `Bolum3Harita` (e.g. the v0.2 change) or to `GeceHaritasi`, rebuild with `-executeMethod NU36.Editor.Lab7SceneBuilder.YenidenKurDokularla`. This regenerates the colour map and takes about a minute.
+  - Run **NU36 → Lab 6 → Create Bolum3_GriKutu Scene** for the grey box after deleting the old one.
+- **Tests:**
+  - EditMode: `-testFilter "NU36.Tests.MenuTests;NU36.Tests.Lab7Tests"`.
+  - PlayMode: `-testFilter "NU36.Tests.MenuPlayTests;NU36.Tests.Lab7PlayTests;NU36.Tests.Lab7Bolum3PlayTests"`.
+  - Images (explicit tests): `-testFilter "NU36.Tests.Lab7GorselKayit;NU36.Tests.MenuGorselKayit"`.
+- **Paper forms:** `Exports/Lab6/kagit/bolum3_kagit_formlari.html`. Open it in a browser and print it to PDF.
+- **Submission zip:** `powershell -ExecutionPolicy Bypass -File Tools/Teslim/teslim_zip.ps1 -OgrenciNo <no> -GddPdf <pdf>` → `Teslim/BMU1421_<no>_H6-7.zip`. Close Unity first.
+
+
+## Lab 8: Bölüm 4 · Kurşun Dağları (Bolum4_KursunDaglari)
+Plan: `Lab8_Plan.md`. State: `Lab8_Implementation.md`.
+- **Scene:** menu **NU36 → Lab 8 → Create Bolum4 Scene** or `-executeMethod NU36.Editor.Lab8SceneBuilder.Create`. It refuses to overwrite.
+  - After a change to `KursunDaglariHaritasi`, `Lab8Arazi`, `Lab8Yapilar` or `Lab8Varliklar`, rebuild with `-executeMethod NU36.Editor.Lab8SceneBuilder.YenidenKur` (about 1 min).
+  - The rebuild deletes only the builder's outputs: the scene, `Assets/Bolum4/{Malzemeler,Prefablar,Meshler,Arazi}` and `GunduzVolume.asset`.
+- **Downloads:** `Indirilenler/Bolum4/` (sources in `KAYNAKLAR.txt`). Not imported as a whole; the models in use are copied to `Assets/Bolum4/Modeller` and `Dokular`. Import settings: `Bolum4ModelPostprocessor`.
+  - GLB → FBX: `& $blender --background --factory-startup --disable-autoexec --python Tools\Blender\bolum4\glb_to_fbx.py -- <in.glb> <out.fbx>`.
+- **Images:** menu **NU36 → Lab 8 → Render Scene Views** (`Logs/lab8/gorsel/sahne_*.png`) and **Render Model Axes** (`yon_*.png`).
+- **Tests:**
+  - EditMode: `-testFilter "NU36.Tests.Lab8Tests;NU36.Tests.Lab8DusmanTests;NU36.Tests.MenuTests"`.
+  - PlayMode: `-testFilter "NU36.Tests.Lab8PlayTests;NU36.Tests.Lab8DusmanPlayTests;NU36.Tests.Lab8Faz3PlayTests;NU36.Tests.MenuPlayTests"` (about 2.5 min).
+  - Measurements: `Logs/lab8/harita_olcumu.txt`, `tren_olcumu.txt`, `dusman_olcumu.txt`, `faz3_olcumu.txt`.
+  - The whole PlayMode suite takes about 10 min. On a machine short of memory run it in two foreground parts: the earlier labs by class name, then the Lab 8 and menu classes above.
+- **Main menu:** `-executeMethod NU36.Editor.Lab8Menu.Guncelle` points AnaMenu to Bölüm 4 (the Bölüm 4 builder also does it).
+- **Keys in Bölüm 4:** Ctrl or the left mouse button = machine gun; Space = bomb; T = next target; O = firing assist on/off; M = GPS; K = easy flight; F/B = brake; R = restart after the end; Esc = menu.
+- **Asset register:** `NU.D.36_Unity/Assets/VARLIKLAR.md`.
+
+## Lab 8 submission (H8)
+- Close Unity, then from the workspace root: `powershell -ExecutionPolicy Bypass -File Tools\Teslim\teslim_h8.ps1 -OgrenciNo <no> -Video <bolum4.mp4>` → `Teslim\BMU1421_<no>_H8.zip` (15–25 min; `-BuildYok` skips the check build).
+- The working copy lives in `%TEMP%\nu36_<no>` and is deleted at the end (`-KopyayiSakla` keeps it). Logs: `Logs/lab8/teslim_*.log`, `teslim_dogrulama.txt`.
+- Recording the video: `Documentation/Lab8_Video_Yonergesi.md`.

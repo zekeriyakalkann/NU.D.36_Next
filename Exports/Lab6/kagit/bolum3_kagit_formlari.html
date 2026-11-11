@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bölüm 3 Kâğıt Formları</title>
+<style>
+  :root { --ink: #1b1712; --soluk: #6b6358; --cizgi: #8a8174; --zemin: #fbf8f2; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e9e4da; color: var(--ink); font: 11pt/1.45 "Segoe UI", Arial, sans-serif; }
+  .sayfa { width: 210mm; min-height: 297mm; margin: 12px auto; padding: 16mm 15mm; background: var(--zemin); box-shadow: 0 1px 6px rgba(0,0,0,.2); }
+  h1 { font-size: 18pt; margin: 0 0 2mm; }
+  h2 { font-size: 12pt; margin: 6mm 0 2mm; border-bottom: 1px solid var(--cizgi); padding-bottom: 1mm; }
+  .ust { display: flex; justify-content: space-between; align-items: baseline; color: var(--soluk); font-size: 9.5pt; margin-bottom: 4mm; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border: 1px solid var(--cizgi); padding: 1.6mm 2mm; vertical-align: top; text-align: left; }
+  th { background: #efe8da; font-weight: 600; }
+  .alan td { height: 9mm; }
+  .uzun td { height: 13mm; }
+  .bos { color: var(--soluk); font-style: italic; }
+  .not { color: var(--soluk); font-size: 9pt; }
+  .harita { width: 100%; border: 1px solid var(--cizgi); margin-top: 2mm; }
+  .cizgiler div { border-bottom: 1px solid var(--cizgi); height: 8mm; }
+  .kutu { display: inline-block; width: 4mm; height: 4mm; border: 1px solid var(--ink); vertical-align: -0.5mm; margin: 0 1mm 0 3mm; }
+  @page { size: A4; margin: 0; }
+  @media print {
+    body { background: none; }
+    .sayfa { margin: 0; box-shadow: none; page-break-after: always; }
+    .ekran { display: none; }
+  }
+  @media (max-width: 230mm) { .sayfa { width: auto; min-height: 0; margin: 0; padding: 16px; } }
+</style>
+</head>
+<body>
+
+<p class="ekran" style="max-width:210mm;margin:12px auto;color:#444">Yazdırmak için Ctrl+P → "PDF olarak kaydet" ya da yazıcı, kâğıt A4, kenar boşluğu "Yok". Üç sayfa: görev sayfası, gözlem formu, yineleme kaydı. Kişi başına bir set.</p>
+
+<!-- ================================================================ 1. GÖREV SAYFASI -->
+<section class="sayfa">
+  <div class="ust"><span>NU.D.36 · Bölüm 3 · Kâğıt Görev</span><span>Sürüm <b>0.1</b> · Ad: ____________________</span></div>
+  <h1>Görev Sayfası — Gece Köprüsü</h1>
+  <p class="not">Değerler tasarım önerisidir (Lab6_Bolum3_Tasarim.md). Kitin 4. sayfasındaki sabit kurallarla karşılaştır; farklıysa kitinkini yaz.</p>
+
+  <h2>Görev</h2>
+  <table>
+    <tr><th style="width:32%">Tek cümle</th><td>Gece, köprüyü şafaktan önce yık ve piste dön.</td></tr>
+    <tr><th>Gece / son tur</th><td>12. tur şafak (12. turun sonunda pistte değilsen görev biter)</td></tr>
+    <tr><th>Can</th><td>3</td></tr>
+    <tr><th>Bomba</th><td>2</td></tr>
+    <tr><th>Başlangıç</th><td>C8, Alçak irtifa, burun kuzeydoğu (KD)</td></tr>
+    <tr><th>Tek kural (Bulut)</th><td>E5, F5 ve G5 bulut karesidir: Orta irtifadaki uçağı bu 3 karede ışıldak yakalayamaz.</td></tr>
+  </table>
+
+  <h2>Harita (12 × 9 kare, A–L batıdan doğuya, 1–9 kuzeyden güneye, 1 kare = 200 m)</h2>
+  <table>
+    <tr><th style="width:32%">Pist (3 kare)</th><td>B8, C8, D8</td></tr>
+    <tr><th>Nehir</th><td>I1–I4, H5–J5 (köprünün altında genişler), J6–J9</td></tr>
+    <tr><th>Köprü (3 kare, 25 m)</th><td>H5, I5, J5</td></tr>
+    <tr><th>Işıldaklar (başlangıç yönü)</th><td>F4 → GD (135°), K5 → B (270°), H7 → K (0°); ışın 6 kare</td></tr>
+    <tr><th>Uçaksavarlar</th><td>G4, K4, I7; menzil Ø 8 kare</td></tr>
+    <tr><th>Ses dinleyici (S)</th><td>H3; menzil Ø 10 kare</td></tr>
+    <tr><th>Tepeler (120 m)</th><td>E4, F7, G7 — Alçak'ı (30 m) keser, Orta'yı (200 m) kesmez</td></tr>
+  </table>
+
+  <h2>İki yol</h2>
+  <table>
+    <tr><th style="width:32%">Yol 1 · tepe arkası (Alçak)</th><td>C8 → D8 → E8 → F8 → G8 → H8 → H7 → H6 → H5 (8 hamle)</td></tr>
+    <tr><th>Yol 2 · açık (bulut içinden)</th><td>C8 → D7 → E6 → F5 → G5 → H5 (5 hamle)</td></tr>
+  </table>
+  <img class="harita" src="../bolum3_harita_v0.1.png" alt="Bölüm 3 haritası v0.1">
+</section>
+
+<!-- ================================================================ 2. GÖZLEM FORMU -->
+<section class="sayfa">
+  <div class="ust"><span>NU.D.36 · Bölüm 3 · Sessiz gözlemci</span><span>Tarih: ____ / ____ / 2026</span></div>
+  <h1>Gözlem Formu</h1>
+  <table class="alan">
+    <tr><th style="width:32%">Sürüm</th><td><b>0.1</b></td></tr>
+    <tr><th>Test sorusu (oyundan önce, evet/hayır)</th><td>Oyuncu köprüye ilk denemede açık yolu (Yol 2) mu seçiyor?</td></tr>
+    <tr><th>Oyuncu (eşin)</th><td></td></tr>
+    <tr><th>Gözlemci (sen)</th><td></td></tr>
+  </table>
+  <p class="not">Kuralları bir kez oku ve sus. Takılırsa yalnızca "Şu an ne düşünüyorsun?" de. Her tur için bir satır yaz; Yorum sütununu boş bırak.</p>
+  <table class="alan">
+    <tr><th style="width:9%">Tur</th><th style="width:38%">Ne yaptı</th><th style="width:38%">Ne dedi</th><th>Yorum</th></tr>
+    <tr><td>1</td><td></td><td></td><td></td></tr>
+    <tr><td>2</td><td></td><td></td><td></td></tr>
+    <tr><td>3</td><td></td><td></td><td></td></tr>
+    <tr><td>4</td><td></td><td></td><td></td></tr>
+    <tr><td>5</td><td></td><td></td><td></td></tr>
+    <tr><td>6</td><td></td><td></td><td></td></tr>
+    <tr><td>7</td><td></td><td></td><td></td></tr>
+    <tr><td>8</td><td></td><td></td><td></td></tr>
+    <tr><td>9</td><td></td><td></td><td></td></tr>
+    <tr><td>10</td><td></td><td></td><td></td></tr>
+    <tr><td>11</td><td></td><td></td><td></td></tr>
+    <tr><td>12</td><td></td><td></td><td></td></tr>
+  </table>
+  <h2>Test sorusunun cevabı</h2>
+  <p><span class="kutu"></span>Evet <span class="kutu"></span>Hayır</p>
+  <h2>Bitince üç soru</h2>
+  <table class="uzun">
+    <tr><th style="width:42%">En çok neyi sevdin?</th><td></td></tr>
+    <tr><th>Nerede takıldın?</th><td></td></tr>
+    <tr><th>Sihirli değneğin olsa neyi değiştirirdin?</th><td></td></tr>
+  </table>
+</section>
+
+<!-- ================================================================ 3. YİNELEME KAYDI -->
+<section class="sayfa">
+  <div class="ust"><span>NU.D.36 · Bölüm 3 · Tek değişiklikle yinele</span><span>Ad: ____________________</span></div>
+  <h1>Yineleme Kaydı</h1>
+  <table class="alan">
+    <tr><th style="width:32%">Eski sürüm → yeni sürüm</th><td><b>0.1 → 0.2</b></td></tr>
+    <tr><th>Tek değişiklik (bir sayı, bir kural ya da bir jetonun yeri)</th><td></td></tr>
+    <tr><th>Hangi gözlem satırı yüzünden (tur no + ne oldu)</th><td></td></tr>
+    <tr><th>Beklenen etki</th><td></td></tr>
+  </table>
+  <p class="not">Aday değişiklikler (yalnız birini, gözleme göre seç): bulutu Yol 2'den çek (E5–G5 → E3–G3) · I2 ışıldağının başlangıç yönünü 270°'den 225°'ye çevir · U1'i G4'ten G3'e taşı. Seçtiğin değişikliği Unity'ye taşımak tek satırdır: <code>Bolum3Harita.cs</code>.</p>
+  <h2>0.2 oyunu</h2>
+  <table class="alan">
+    <tr><th style="width:32%">Kim oynadı (yan ikili daha iyi)</th><td></td></tr>
+    <tr><th>Test sorusunun cevabı (0.1)</th><td><span class="kutu"></span>Evet <span class="kutu"></span>Hayır</td></tr>
+    <tr><th>Test sorusunun cevabı (0.2)</th><td><span class="kutu"></span>Evet <span class="kutu"></span>Hayır</td></tr>
+    <tr><th>Cevap değişti mi?</th><td><span class="kutu"></span>Evet <span class="kutu"></span>Hayır</td></tr>
+  </table>
+  <h2>Sonuç ve not</h2>
+  <div class="cizgiler"><div></div><div></div><div></div><div></div><div></div><div></div></div>
+  <h2>Ekran süresi ile kâğıt süresi (gri kutu, 1 tur = 15 s)</h2>
+  <table class="alan">
+    <tr><th>Yol</th><th>Kâğıt: tur × 15 s</th><th>Ekran (kronometre)</th><th>Fark</th></tr>
+    <tr><td>Yol 1</td><td></td><td></td><td></td></tr>
+    <tr><td>Yol 2</td><td></td><td></td><td></td></tr>
+  </table>
+  <p class="not">Unity'nin kendi ölçümü (otopilot, piste dönüş dahil): Yol 1 49,5 s, Yol 2 41,0 s — Logs/lab6/sure_olcumu.txt.</p>
+</section>
+
+</body>
+</html>

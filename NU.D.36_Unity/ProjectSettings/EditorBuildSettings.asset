@@ -26,5 +26,14 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Bolum3_GriKutu.unity
     guid: 8afc57e3b48b40544a2ccbf796d24fee
+  - enabled: 1
+    path: Assets/Scenes/AnaMenu.unity
+    guid: 3cab06838c1039a478c670750ed61ec0
+  - enabled: 1
+    path: Assets/Scenes/Rota07.unity
+    guid: bebb8e9a51975614589b79ec2a3a9773
+  - enabled: 1
+    path: Assets/Scenes/Bolum4_KursunDaglari.unity
+    guid: 7a8140001af98b54f9b4737f7b138603
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

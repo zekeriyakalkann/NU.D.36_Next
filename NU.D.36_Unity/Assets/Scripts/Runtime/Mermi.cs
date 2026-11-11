@@ -21,6 +21,10 @@ namespace NU36
         [SerializeField, Min(0.01f)] float ucNoktaYaricapi = 0.15f;
         [Tooltip("Self-destruct after this many seconds.")]
         [SerializeField, Min(0.1f)] float omur = 6f;
+        [Tooltip("Lab 8: side of the shooter; a health of the same side is not hurt. Notr = Labs 5–7.")]
+        [SerializeField] Taraf taraf = Taraf.Notr;
+        [Tooltip("Lab 8: optional effect spawned at the hit point (sparks, dust). Removes itself.")]
+        [SerializeField] GameObject isabetEfekti;
 
         Vector3 yon = Vector3.forward;
         float yas;
@@ -31,6 +35,11 @@ namespace NU36
         public Vector3 Yon => yon;
         public bool Supurme { get => supurme; set => supurme = value; }
         public LayerMask Vurulacak { get => vurulacak; set => vurulacak = value; }
+        public Taraf Taraf { get => taraf; set => taraf = value; }
+        /// <summary>Lifetime in seconds (range = speed × lifetime).</summary>
+        public float Omur { get => omur; set => omur = Mathf.Max(0.05f, value); }
+        /// <summary>True when the last hit did damage.</summary>
+        public bool HasarVerdi { get; private set; }
         /// <summary>Collider hit by this round (null until it hits something).</summary>
         public Collider Vurdugu { get; private set; }
 
@@ -46,6 +55,13 @@ namespace NU36
             vurulacak = maske;
             supurme = supur;
             transform.forward = yon;
+        }
+
+        /// <summary>Lab 8: <see cref="Ates(Vector3, float, int, LayerMask, bool)"/> with the shooter's side.</summary>
+        public void Ates(Vector3 yeniYon, float yeniHiz, int yeniHasar, LayerMask maske, bool supur, Taraf yeniTaraf)
+        {
+            Ates(yeniYon, yeniHiz, yeniHasar, maske, supur);
+            taraf = yeniTaraf;
         }
 
         // Update değil FixedUpdate: adım fizik saatine bağlı olmalı. Update'te olsaydı adım kare hızıyla
@@ -70,6 +86,8 @@ namespace NU36
             {
                 if (Physics.Raycast(transform.position, yon, out RaycastHit vurus, adim, vurulacak, QueryTriggerInteraction.Ignore))
                 {
+                    if (isabetEfekti != null)
+                        Instantiate(isabetEfekti, vurus.point, Quaternion.LookRotation(vurus.normal));
                     Vur(vurus.collider);
                     return true;
                 }
@@ -93,7 +111,7 @@ namespace NU36
             Vurdugu = c;
             var saglik = c.GetComponentInParent<Saglik>();
             if (saglik != null)
-                saglik.Vur(hasar);
+                HasarVerdi = saglik.Vur(hasar, HasarTuru.Mermi, taraf);
 
             var govde = c.attachedRigidbody;
             if (govde != null && !govde.isKinematic)

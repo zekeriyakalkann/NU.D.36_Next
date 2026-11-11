@@ -58,12 +58,25 @@ namespace NU36
             return (s, r);
         }
 
-        /// <summary>World position (y = 0) of the centre of a square.</summary>
-        public static Vector3 KareMerkezi(string kare)
+        /// <summary>World position (y = 0) of the centre of a square (grey box: map centred on <see cref="Merkez"/>).</summary>
+        public static Vector3 KareMerkezi(string kare) => KareMerkezi(kare, Merkez);
+
+        /// <summary>Centre of a square for a map centred on <paramref name="haritaMerkezi"/> (Lab 7 night map: the origin).</summary>
+        public static Vector3 KareMerkezi(string kare, Vector3 haritaMerkezi)
         {
             var (s, r) = Coz(kare);
-            return new Vector3(Merkez.x - Sutun * Kare / 2f + Kare * (s + 0.5f), 0f,
-                               Merkez.z + Satir * Kare / 2f - Kare * (r + 0.5f));
+            return new Vector3(haritaMerkezi.x - Sutun * Kare / 2f + Kare * (s + 0.5f), 0f,
+                               haritaMerkezi.z + Satir * Kare / 2f - Kare * (r + 0.5f));
+        }
+
+        /// <summary>The square that contains world (x, z) for a map centred on <paramref name="haritaMerkezi"/>; null outside the map.</summary>
+        public static string KareAdi(float x, float z, Vector3 haritaMerkezi)
+        {
+            int s = Mathf.FloorToInt((x - haritaMerkezi.x + Sutun * Kare / 2f) / Kare);
+            int r = Mathf.FloorToInt((haritaMerkezi.z + Satir * Kare / 2f - z) / Kare);
+            if (s < 0 || s >= Sutun || r < 0 || r >= Satir)
+                return null;
+            return $"{(char)('A' + s)}{r + 1}";
         }
 
         /// <summary>Unit vector (y = 0) for a compass direction in degrees.</summary>

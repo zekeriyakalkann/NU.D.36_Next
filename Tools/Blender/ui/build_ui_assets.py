@@ -23,7 +23,7 @@ ALT_MAX = 500.0    # m dial range
 SWEEP0, SWEEP1 = -135.0, 135.0
 
 
-def dial_face(cx, cy, M, vmax, major, minor, labels, label_fmt, caption, unit, red_from=None):
+def dial_face(cx, cy, M, vmax, major, minor, labels, label_fmt, caption, unit, red_from=None, label_r=118, label_size=40):
     """One dial (500 px bezel). Needle pivot is the dial centre; value v is at angle -135 + v/vmax*270 degrees."""
     ring(cx, cy, 250, 196, 0.05, M["brass"], z0=0.02, name="Bezel")
     ring(cx, cy, 204, 190, 0.075, M["steel"], z0=0.02, name="Lip")
@@ -42,8 +42,8 @@ def dial_face(cx, cy, M, vmax, major, minor, labels, label_fmt, caption, unit, r
             radial_bar(cx, cy, t, 166, 186, 3.2, 0.006, M["ink"], 0.02, "Minor")
     for i, lab in enumerate(labels):
         t = SWEEP0 + (i * major) / vmax * (SWEEP1 - SWEEP0)
-        x, y = pol(cx, cy, 118, t)
-        text(label_fmt(lab), x, y, 40, M["ink"], 0.021)
+        x, y = pol(cx, cy, label_r, t)
+        text(label_fmt(lab), x, y, label_size, M["ink"], 0.021)
     if red_from is not None:
         ring(cx, cy, 196, 189, 0.007, M["red"], z0=0.02, t0=SWEEP0 + red_from / vmax * 270, t1=SWEEP1, name="RedZone")
     text(caption, cx, cy + 96, 30, M["ink"], 0.021)
@@ -55,6 +55,27 @@ def build_dials(M):
     new_scene(1024, 512)
     dial_face(256, 256, M, SPEED_MAX, 10, 2, range(0, 51, 10), lambda v: str(v), "HIZ", "M/S", red_from=42)
     dial_face(768, 256, M, ALT_MAX, 100, 20, range(0, 501, 100), lambda v: str(v // 100), "IRTIFA", "x100 M")
+
+
+NIGHT_SPEED_MAX = 500.0   # km/h; Lab 7 aerodynamic model: stall 125, take-off ~176, level max ~414 km/h
+
+
+def build_night_speed_dial(M):
+    """Lab 7 airspeed dial (512x512, same style as the Lab 4 faces): 0-500 km/h. Coloured bands under the tick marks:
+    green = normal range from take-off speed (150) to 420, red = above 420 (dive). Needle pivot is the centre, sweep
+    -135..+135 like the Lab 4 dials. Three-digit numerals are smaller and further in than on the Lab 4 faces."""
+    new_scene(512, 512)
+    green = material("GreenLacquer", (0.05, 0.42, 0.10), 0.0, 0.25, bump=0.05)
+    cx = cy = 256
+
+    def band(v0, v1, mat, name):
+        ring(cx, cy, 186, 172, 0.003, mat, z0=0.02, t0=SWEEP0 + v0 / NIGHT_SPEED_MAX * 270,
+             t1=SWEEP0 + v1 / NIGHT_SPEED_MAX * 270, bevel=0.0, name=name)
+
+    dial_face(cx, cy, M, NIGHT_SPEED_MAX, 100, 20, range(0, 501, 100), lambda v: str(v), "HIZ", "KM/SA",
+              label_r=106, label_size=32)
+    band(150, 420, green, "GreenBand")
+    band(420, 500, M["red"], "RedBand")
 
 
 def build_needle(M):
@@ -251,14 +272,16 @@ def build_hud(M):
 BUILD = {"dials": ("gosterge-kadranlari", build_dials), "needle": ("gosterge-ibre", build_needle),
          "knob": ("gaz-kolu-topuz", build_knob), "plate": ("gaz-kolu-plakasi", build_plate),
          "compass": ("pusula-seridi", build_compass), "targets": ("hedef-isaretleri", build_targets),
-         "buttons": ("dugme-seti", build_buttons), "score": ("puan-tablosu", build_score), "hud": ("hud-cerceve", build_hud)}
+         "buttons": ("dugme-seti", build_buttons), "score": ("puan-tablosu", build_score), "hud": ("hud-cerceve", build_hud),
+         "night_speed": ("gece-hiz-kadrani", build_night_speed_dial)}
 
 
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:]
     asset, outdir = argv[0], os.path.abspath(argv[1])
     blend_dir = os.path.abspath(argv[2]) if len(argv) > 2 else None
-    names = list(BUILD) if asset == "all" else asset.split(",")
+    # "all" = the nine Lab 4 sprites; the Lab 7 dial is built on its own (night_speed)
+    names = [k for k in BUILD if k != "night_speed"] if asset == "all" else asset.split(",")
     os.makedirs(outdir, exist_ok=True)
     for a in names:
         fname, fn = BUILD[a]

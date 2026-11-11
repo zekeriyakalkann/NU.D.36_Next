@@ -22,6 +22,9 @@ namespace NU36
         [Tooltip("Release point relative to the aircraft (local, m): below the fuselage.")]
         [SerializeField] Vector3 birakmaOfseti = new Vector3(0f, -1.6f, 0f);
         [SerializeField] InputAction birakTusu = new InputAction("BombaBirak", InputActionType.Button, "<Keyboard>/space");
+        [Tooltip("Lab 8: no release higher than this above the ground (m); 0 = no ceiling (Labs 5–7). Worksheet 05: " +
+                 "high up you are safe from the AA guns but cannot hit a tank from there.")]
+        [SerializeField, Min(0f)] float birakmaTavani;
 
         int kalan;
         bool baslatildi;
@@ -30,12 +33,22 @@ namespace NU36
         public event Action<Bomba> BombaBirakildi;
         /// <summary>Raised whenever the remaining count changes (release or resupply).</summary>
         public event Action<int> KalanDegisti;
+        /// <summary>Lab 8: raised when a release is refused above <see cref="BirakmaTavani"/>.</summary>
+        public event Action CokYuksekteReddedildi;
 
         public int Kapasite => kapasite;
         public int Kalan { get { Baslat(); return kalan; } }
         public Bomba BombaOn { get => bombaOn; set => bombaOn = value; }
         public UcusKontrol Ucus { get => ucus; set => ucus = value; }
         public int BirakilanSayisi { get; private set; }
+        public float BirakmaTavani { get => birakmaTavani; set => birakmaTavani = Mathf.Max(0f, value); }
+        /// <summary>True when the aircraft is above the release ceiling (always false without a ceiling).</summary>
+        public bool CokYuksek => birakmaTavani > 0f && ZeminOlcer.Irtifa(BirakmaNoktasi) > birakmaTavani;
+        /// <summary>
+        /// Optional guidance (Lab 7 targeting assist, <see cref="NisanSistemi"/>): the target the next bomb flies to, or null
+        /// for a free-falling bomb (Lab 5 behaviour, also when this is not set).
+        /// </summary>
+        public Func<Yikilabilir> GudumHedefi { get; set; }
 
         /// <summary>Dive angle in degrees (positive = nose below the horizon) of a forward vector.</summary>
         public static float DalisAcisi(Vector3 ileri) => -Mathf.Asin(Mathf.Clamp(ileri.normalized.y, -1f, 1f)) * Mathf.Rad2Deg;
@@ -67,12 +80,13 @@ namespace NU36
 
         void Update()
         {
-            if (birakTusu.WasPressedThisFrame())
+            // Time.timeScale 0 = game paused (pause menu): the key is ignored.
+            if (birakTusu.WasPressedThisFrame() && Time.timeScale > 0f)
                 Birak();
         }
 
-        /// <summary>Velocity the bomb inherits: the aircraft's forward speed along its nose.</summary>
-        public Vector3 UcakHizi => ucus != null ? transform.forward * ucus.Hiz : Vector3.zero;
+        /// <summary>Velocity the bomb inherits: the aircraft's velocity (kinematic model: its speed along the nose).</summary>
+        public Vector3 UcakHizi => ucus != null ? ucus.HizVektoru : Vector3.zero;
 
         /// <summary>World position where a bomb leaves the aircraft.</summary>
         public Vector3 BirakmaNoktasi => transform.TransformPoint(birakmaOfseti);
@@ -91,14 +105,23 @@ namespace NU36
 
             Vector3 nokta = BirakmaNoktasi;
             float irtifa = ZeminOlcer.Irtifa(nokta);
+            if (birakmaTavani > 0f && irtifa > birakmaTavani)
+            {
+                Debug.Log($"[BombaYuku] Çok yüksek ({irtifa:F0} m > {birakmaTavani:F0} m): bomba bırakılamaz.");
+                CokYuksekteReddedildi?.Invoke();
+                return null;
+            }
             float aci = DalisAcisi(transform.forward);
             Bomba b = Instantiate(bombaOn, nokta, transform.rotation);
             b.Birak(UcakHizi, irtifa, saglik);
+            Yikilabilir gudum = GudumHedefi?.Invoke();
+            if (gudum != null)
+                b.Gudumle(gudum);
             kalan--;
             BirakilanSayisi++;
             bool pencere = PencereIcindeMi(aci, irtifa);
             Debug.Log($"[BombaYuku] Bomba bırakıldı: dalış {aci:F0}°, irtifa {irtifa:F0} m, hız {(ucus != null ? ucus.Hiz : 0f):F0} m/s, " +
-                      $"pencere {(pencere ? "İÇİNDE" : "DIŞINDA")}; kalan {kalan}/{kapasite}");
+                      (gudum != null ? $"güdümlü → {gudum.GorunenAd}; " : $"pencere {(pencere ? "İÇİNDE" : "DIŞINDA")}; ") + $"kalan {kalan}/{kapasite}");
             KalanDegisti?.Invoke(kalan);
             BombaBirakildi?.Invoke(b);
             return b;

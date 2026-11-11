@@ -133,9 +133,12 @@ namespace NU36.Tests
         public void EarlierScenes_AreByteIdentical(string path, string md5) => Assert.AreEqual(md5, Md5(path));
 
         [Test]
-        public void GriKutu_IsLastInBuildSettings()
+        public void GriKutu_IsInBuildSettings_AfterRota05()
         {
-            Assert.AreEqual(Lab6SceneBuilder.ScenePath, EditorBuildSettings.scenes.Last().path);
+            // Was "last"; Lab 7 appends Rota07 after it (same pattern as D-073).
+            var yollar = EditorBuildSettings.scenes.Select(s => s.path).ToList();
+            Assert.Greater(yollar.IndexOf(Lab6SceneBuilder.ScenePath), yollar.IndexOf(Lab5SceneBuilder.ScenePath));
+            Assert.IsTrue(EditorBuildSettings.scenes.Single(s => s.path == Lab6SceneBuilder.ScenePath).enabled);
         }
 
         [Test]
