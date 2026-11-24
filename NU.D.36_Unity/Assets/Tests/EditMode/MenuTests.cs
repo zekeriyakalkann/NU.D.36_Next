@@ -102,10 +102,12 @@ namespace NU36.Tests
             var menu = Tek<AnaMenu>(roots);
             Assert.IsNotNull(menu.Arkaplan, "background");
             Assert.IsNotNull(menu.DugmeSeti, "button sheet");
-            // Hafta 8 (Lab 8 phase 3, D-118): GÖREVE BAŞLA opens Bölüm 4; the list gained it as its 7th entry.
-            Assert.AreEqual(Lab8SceneBuilder.SceneName, menu.GorevSahnesi);
-            Assert.AreEqual(7, menu.Bolumler.Count);
+            // Hafta 8 (Lab 8 phase 3, D-118): the list gained Bölüm 4 as its 7th entry.
+            // Hafta 9 (Lab 9, D-136): GÖREVE BAŞLA opens Bölüm 5; the list gained it as its 8th entry.
+            Assert.AreEqual(Lab9SceneBuilder.SceneName, menu.GorevSahnesi);
+            Assert.AreEqual(8, menu.Bolumler.Count);
             Assert.AreEqual(Lab8SceneBuilder.SceneName, menu.Bolumler[6].sahne);
+            Assert.AreEqual(Lab9SceneBuilder.SceneName, menu.Bolumler[7].sahne);
             foreach (AnaMenu.Bolum b in menu.Bolumler)
                 Assert.Contains($"Assets/Scenes/{b.sahne}.unity", yollar, b.ad);
             Assert.IsNotNull(Tek<Camera>(roots));

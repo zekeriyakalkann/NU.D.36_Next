@@ -26,9 +26,12 @@ namespace NU36.Editor
             mi.materialImportMode = ModelImporterMaterialImportMode.ImportStandard;
         }
 
+        /// <summary>Lab 9: Bölüm 5's downloaded textures (Poly Haven sand) get the same settings.</summary>
+        public const string Bolum5DokuKoku = "Assets/Bolum5/Dokular/";
+
         void OnPreprocessTexture()
         {
-            if (!assetPath.StartsWith(Kok))
+            if (!assetPath.StartsWith(Kok) && !assetPath.StartsWith(Bolum5DokuKoku))
                 return;
             var ti = (TextureImporter)assetImporter;
             if (assetPath.Contains("_nor_gl_"))

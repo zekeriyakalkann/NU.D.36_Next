@@ -22,20 +22,26 @@ namespace NU36
         {
             public Susturulabilir Kaynak;          // for a tank pair: the first live tank
             public readonly List<Susturulabilir> Cift = new List<Susturulabilir>();
-            public bool Bomba => Kaynak != null && Kaynak.Tur == DusmanTuru.Tank;
+            /// <summary>A bomb target: a tank pair, or (Lab 9) a landing ship.</summary>
+            public bool Bomba => Kaynak != null && (Kaynak.Tur == DusmanTuru.Tank || Kaynak.Tur == DusmanTuru.Gemi);
+            /// <summary>A machine-gun target: everything but a tank (Lab 9: a landing ship is both).</summary>
+            public bool Makineli => Kaynak != null && Kaynak.Tur != DusmanTuru.Tank;
             public bool Canli => Kaynak != null && !Kaynak.Sustu && Kaynak.gameObject.activeInHierarchy;
             public Vector3 Nokta
             {
                 get
                 {
+                    if (Kaynak.Tur == DusmanTuru.Gemi) return Kaynak.transform.position + Vector3.up * 2.5f;   // the well deck
                     if (!Bomba) return Kaynak.transform.position + Vector3.up * (Kaynak.Tur == DusmanTuru.Ucaksavar ? 1.5f : 0f);
                     Vector3 t = Vector3.zero; int n = 0;
                     foreach (var s in Cift) if (s != null && !s.Sustu) { t += s.transform.position; n++; }
                     return n > 0 ? t / n : Kaynak.transform.position;   // on the ground between the two tanks
                 }
             }
-            public Vector3 Hiz => Kaynak != null && Kaynak.TryGetComponent(out DusmanUcagi u) && u.Aktif ? u.HizVektoru : Vector3.zero;
-            public string Ad => Bomba ? "TANK ÇİFTİ" : Kaynak.Tur == DusmanTuru.Ucaksavar ? "UÇAKSAVAR" : "DÜŞMAN UÇAĞI";
+            public Vector3 Hiz => Kaynak == null ? Vector3.zero
+                : Kaynak.TryGetComponent(out DusmanUcagi u) ? (u.Aktif ? u.HizVektoru : Vector3.zero)
+                : Kaynak.TryGetComponent(out CikarmaGemisi g) ? g.HizVektoru : Vector3.zero;
+            public string Ad => Kaynak.Tur == DusmanTuru.Gemi ? "ÇIKARMA GEMİSİ" : Bomba ? "TANK ÇİFTİ" : Kaynak.Tur == DusmanTuru.Ucaksavar ? "UÇAKSAVAR" : "DÜŞMAN UÇAĞI";
         }
 
         [SerializeField] UcusKontrol ucus;
@@ -75,7 +81,8 @@ namespace NU36
             get
             {
                 if (Secili == null) return "";
-                if (Secili.Bomba)
+                // Lab 9: a ship with no bombs left is still a machine-gun target.
+                if (Secili.Bomba && (!Secili.Makineli || yuk == null || yuk.Kalan > 0 || (yoldaki != null && !yoldaki.Patladi)))
                 {
                     if (yoldaki != null && !yoldaki.Patladi) return "BOMBA YOLDA";
                     if (yuk != null && yuk.Kalan == 0) return "BOMBA YOK";
@@ -137,6 +144,13 @@ namespace NU36
                         adaylar.Add(new Hedef { Kaynak = s });
                 }
             }
+            // Lab 9: free targets (landing ships, guard aircraft); none in Bölüm 4.
+            foreach (Susturulabilir s in Susturulabilir.Serbestler)
+            {
+                if (s == null || s.Sustu || !s.gameObject.activeInHierarchy) continue;
+                if (s.Tur == DusmanTuru.Ucak && (!s.TryGetComponent(out DusmanUcagi u) || !u.Aktif)) continue;
+                adaylar.Add(new Hedef { Kaynak = s });
+            }
         }
 
         static Hedef Ayni(List<Hedef> l, Hedef h)
@@ -170,7 +184,7 @@ namespace NU36
             Mesafe = Vector3.Distance(p, n);
 
             // Machine gun: the selected target, or any other machine-gun target that sits in the cone.
-            Hedef mg = !Secili.Bomba ? Secili : null;
+            Hedef mg = Secili.Makineli ? Secili : null;
             Hedef konide = KonideBul(p, transform.forward);
             if (konide != null) mg = konide;
             if (mg != null)
@@ -202,7 +216,7 @@ namespace NU36
             float enIyiAci = koni;
             foreach (Hedef h in adaylar)
             {
-                if (h.Bomba) continue;
+                if (!h.Makineli) continue;
                 Vector3 oncu = Tank.OncuNokta(p, h.Nokta, h.Hiz, MermiHizi());
                 Vector3 d = oncu - p;
                 if (d.sqrMagnitude > mgMenzil * mgMenzil) continue;
@@ -220,8 +234,8 @@ namespace NU36
             {
                 Vector3 d = h.Nokta - p;
                 float puan = d.magnitude * (1.6f - 0.6f * Vector3.Dot(ileri, d.normalized));   // ahead counts as nearer
-                if (h.Bomba && yuk != null && yuk.Kalan == 0) puan *= 4f;
-                if (!h.Bomba && makineli != null && makineli.Bos) puan *= 4f;
+                if (h.Bomba && !h.Makineli && yuk != null && yuk.Kalan == 0) puan *= 4f;
+                if (h.Makineli && !h.Bomba && makineli != null && makineli.Bos) puan *= 4f;
                 if (puan < enIyiPuan) { enIyiPuan = puan; enIyi = h; }
             }
             return enIyi;

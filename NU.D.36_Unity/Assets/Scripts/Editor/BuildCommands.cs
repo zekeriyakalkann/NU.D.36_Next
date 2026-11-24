@@ -39,6 +39,9 @@ namespace NU36.Editor
         // Lab 8: player that starts straight in Bölüm 4 (video recording); Esc → menu still reaches the other levels.
         public static void BuildWindowsBolum4() => Build("../Builds/Windows_Bolum4/NU.D.36.exe", Lab8SceneBuilder.ScenePath);
 
+        // Lab 9: player that starts straight in Bölüm 5 (video / quick test); Esc → menu still reaches the other levels.
+        public static void BuildWindowsBolum5() => Build("../Builds/Windows_Bolum5/NU.D.36.exe", Lab9SceneBuilder.ScenePath);
+
         static void Build(string outputPath, string firstScene)
         {
             string[] scenes = EditorBuildSettings.scenes

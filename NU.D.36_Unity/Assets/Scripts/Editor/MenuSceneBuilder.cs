@@ -52,7 +52,7 @@ namespace NU36.Editor
             var so = new SerializedObject(menu);
             so.FindProperty("arkaplan").objectReferenceValue = arkaplan;
             so.FindProperty("dugmeSeti").objectReferenceValue = dugmeSeti;
-            so.FindProperty("gorevSahnesi").stringValue = Lab8SceneBuilder.SceneName;   // Hafta 8: the current mission
+            so.FindProperty("gorevSahnesi").stringValue = Lab9SceneBuilder.SceneName;   // Hafta 9: the current mission
             so.ApplyModifiedPropertiesWithoutUndo();
 
             if (!EditorSceneManager.SaveScene(scene, ScenePath))

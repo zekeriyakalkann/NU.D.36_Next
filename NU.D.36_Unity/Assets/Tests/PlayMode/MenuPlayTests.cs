@@ -52,7 +52,7 @@ namespace NU36.Tests
             Assert.AreEqual("GÖREVE BAŞLA", basla.Yazi);
 
             basla.onClick.Invoke();
-            Assert.AreEqual("Bolum4_KursunDaglari", yuklenen.Last(), "Hafta 8: the current mission (D-118)");
+            Assert.AreEqual("Bolum5_KartalGecidi", yuklenen.Last(), "Hafta 9: the current mission (D-118, D-136)");
 
             menu.Dugme("Bolumler").onClick.Invoke();
             Assert.AreEqual(AnaMenu.Panel.Bolumler, menu.Acik);

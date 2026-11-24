@@ -10,10 +10,13 @@ namespace NU36
     /// zone over → withdraw (smoke trail when hit, climbs and leaves the map; it never falls). It keeps
     /// <see cref="enAzYerYuksekligi"/> above the ground, looking ahead along its path.
     /// Target: the player when close and ahead of the nose, otherwise the train.
+    /// Lab 9 (Bölüm 5) adds a guard mode (<see cref="Koruma"/>, off by default): with nothing to attack it patrols a circle
+    /// over the guarded point (<see cref="Durum.Devriye"/>); the player becomes the target as soon as it is within
+    /// <c>korumaYaricapi</c> of that point, wherever the nose points.
     /// </summary>
     public class DusmanUcagi : MonoBehaviour
     {
-        public enum Durum { Bekliyor, Saldiri, Siyrilma, Cekilme, Gitti }
+        public enum Durum { Bekliyor, Saldiri, Siyrilma, Cekilme, Gitti, Devriye }
 
         [SerializeField] UcusKontrol oyuncu;
         [SerializeField] Tren tren;
@@ -48,6 +51,16 @@ namespace NU36
         [Tooltip("Withdrawal: leaves (and switches off) beyond this distance from the map centre.")]
         [SerializeField, Min(100f)] float cikisYaricapi = 3400f;
         [SerializeField] int tohum = 1;
+        [Header("Koruma (Lab 9)")]
+        [SerializeField] bool koruma;
+        [SerializeField] Vector3 korumaMerkezi;
+        [SerializeField, Min(50f)] float devriyeYaricapi = 800f;
+        [Tooltip("Patrol height above the guarded point (m).")]
+        [SerializeField, Min(50f)] float devriyeYuksekligi = 350f;
+        [Tooltip("The player is attacked anywhere within this horizontal distance of the guarded point (m).")]
+        [SerializeField, Min(0f)] float korumaYaricapi = 2400f;
+        [Tooltip("Withdrawal heads away from this point (Bölüm 4: the origin).")]
+        [SerializeField] Vector3 haritaMerkezi;
 
         Rigidbody govde;
         System.Random rastgele;
@@ -66,7 +79,22 @@ namespace NU36
         public int AtisSayisi { get; private set; }
         public Transform SonHedef { get; private set; }
         public Vector3 HizVektoru => transform.forward * hiz;
-        public bool Aktif => Simdiki == Durum.Saldiri || Simdiki == Durum.Siyrilma;
+        public bool Aktif => Simdiki == Durum.Saldiri || Simdiki == Durum.Siyrilma || Simdiki == Durum.Devriye;
+        public bool Koruma => koruma;
+        public Vector3 KorumaMerkezi => korumaMerkezi;
+        public float KorumaYaricapi => korumaYaricapi;
+
+        /// <summary>Lab 9: guard mode around <paramref name="merkez"/> (set by <see cref="KorumaUcuslari"/>).</summary>
+        public void KorumaAyarla(Vector3 merkez, float devriyeR, float yukseklik, float korumaR, Vector3 harita, float cikis)
+        {
+            koruma = true;
+            korumaMerkezi = merkez;
+            devriyeYaricapi = devriyeR;
+            devriyeYuksekligi = yukseklik;
+            korumaYaricapi = korumaR;
+            haritaMerkezi = harita;
+            cikisYaricapi = cikis;
+        }
 
         void Awake()
         {
@@ -82,7 +110,7 @@ namespace NU36
         public void Basla(Vector3 giris)
         {
             gameObject.SetActive(true);
-            Vector3 hedef = tren != null && tren.Araclar.Length > 0 ? tren.Araclar[0].transform.position : Vector3.zero;
+            Vector3 hedef = koruma ? korumaMerkezi : tren != null && tren.Araclar.Length > 0 ? tren.Araclar[0].transform.position : Vector3.zero;
             Vector3 d = hedef - giris;
             d.y = 0f;
             Quaternion q = Quaternion.LookRotation(d.sqrMagnitude > 1f ? d : Vector3.forward, Vector3.up);
@@ -95,7 +123,7 @@ namespace NU36
         /// <summary>Its zone is over: it leaves without being counted as silenced.</summary>
         public void Cekil()
         {
-            if (Simdiki == Durum.Saldiri || Simdiki == Durum.Siyrilma)
+            if (Simdiki == Durum.Saldiri || Simdiki == Durum.Siyrilma || Simdiki == Durum.Devriye)
                 Simdiki = Durum.Cekilme;
         }
 
@@ -114,6 +142,15 @@ namespace NU36
         {
             hedefHizi = Vector3.zero;
             Vector3 p = transform.position;
+            if (koruma)
+            {
+                if (oyuncu == null || !oyuncu.enabled) return null;
+                Vector3 o = oyuncu.transform.position - korumaMerkezi;
+                o.y = 0f;
+                if (o.sqrMagnitude > korumaYaricapi * korumaYaricapi) return null;
+                hedefHizi = oyuncu.HizVektoru;
+                return oyuncu.transform;
+            }
             if (oyuncu != null && oyuncu.enabled)
             {
                 Vector3 d = oyuncu.transform.position - p;
@@ -158,7 +195,7 @@ namespace NU36
                 case Durum.Saldiri:
                     hedef = HedefSec(out Vector3 hh);
                     SonHedef = hedef;
-                    if (hedef == null) { Simdiki = Durum.Cekilme; break; }
+                    if (hedef == null) { Simdiki = koruma ? Durum.Devriye : Durum.Cekilme; break; }
                     nisan = Tank.OncuNokta(p, hedef.position, hh, mermiHizi);
                     istenen = (nisan - p).normalized;
                     if ((hedef.position - p).sqrMagnitude < siyrilmaMesafesi * siyrilmaMesafesi)
@@ -174,11 +211,15 @@ namespace NU36
                     istenen = siyrilmaYonu;
                     if (Time.time >= siyrilmaBitis) Simdiki = Durum.Saldiri;
                     break;
+                case Durum.Devriye:
+                    if (HedefSec(out _) != null) { Simdiki = Durum.Saldiri; break; }
+                    istenen = DevriyeYonu(p);
+                    break;
                 case Durum.Cekilme:
-                    Vector3 disari = new Vector3(p.x, 0f, p.z);
+                    Vector3 disari = new Vector3(p.x - haritaMerkezi.x, 0f, p.z - haritaMerkezi.z);
                     disari = disari.sqrMagnitude > 1f ? disari.normalized : new Vector3(ileri.x, 0f, ileri.z).normalized;
                     istenen = (disari + Vector3.up * 0.35f).normalized;
-                    if (new Vector2(p.x, p.z).magnitude > cikisYaricapi)
+                    if (new Vector2(p.x - haritaMerkezi.x, p.z - haritaMerkezi.z).magnitude > cikisYaricapi)
                     {
                         Simdiki = Durum.Gitti;
                         gameObject.SetActive(false);
@@ -219,6 +260,16 @@ namespace NU36
 
             if (Simdiki == Durum.Saldiri && hedef != null)
                 AtesDene(yeniKonum, yeniIleri, nisan);
+        }
+
+        /// <summary>Guard patrol: towards a point 30° further round the circle over the guarded point, at patrol height.</summary>
+        Vector3 DevriyeYonu(Vector3 p)
+        {
+            Vector3 r = new Vector3(p.x - korumaMerkezi.x, 0f, p.z - korumaMerkezi.z);
+            if (r.sqrMagnitude < 1f) r = Vector3.right;
+            Vector3 ileri = Quaternion.Euler(0f, 30f, 0f) * r.normalized * devriyeYaricapi;
+            Vector3 hedef = new Vector3(korumaMerkezi.x + ileri.x, korumaMerkezi.y + devriyeYuksekligi, korumaMerkezi.z + ileri.z);
+            return (hedef - p).normalized;
         }
 
         /// <summary>True when the aim point is inside the cone and within range.</summary>

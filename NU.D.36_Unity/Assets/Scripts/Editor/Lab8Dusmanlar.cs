@@ -51,7 +51,7 @@ namespace NU36.Editor
 
         // ================================================================== materials and particles
 
-        static Material Parcacik(string ad, Texture2D doku, Color renk, bool eklemeli)
+        public static Material Parcacik(string ad, Texture2D doku, Color renk, bool eklemeli)
         {
             Lab8Varliklar.Klasor(Lab8Varliklar.Malzemeler);
             string yol = $"{Lab8Varliklar.Malzemeler}/{ad}.mat";
@@ -68,7 +68,7 @@ namespace NU36.Editor
             return m;
         }
 
-        static ParticleSystem Sistem(string ad, Transform ust, Material mat, int enCok, bool dunya)
+        public static ParticleSystem Sistem(string ad, Transform ust, Material mat, int enCok, bool dunya)
         {
             var go = new GameObject(ad);
             if (ust != null) go.transform.SetParent(ust, false);
@@ -87,14 +87,14 @@ namespace NU36.Editor
             return ps;
         }
 
-        static Gradient Renkler(params (float t, Color c)[] n)
+        public static Gradient Renkler(params (float t, Color c)[] n)
         {
             var g = new Gradient();
             g.SetKeys(n.Select(k => new GradientColorKey(k.c, k.t)).ToArray(), n.Select(k => new GradientAlphaKey(k.c.a, k.t)).ToArray());
             return g;
         }
 
-        static void Kaydet(GameObject g, string yol)
+        public static void Kaydet(GameObject g, string yol)
         {
             PrefabUtility.SaveAsPrefabAsset(g, yol);
             Object.DestroyImmediate(g);
@@ -213,7 +213,7 @@ namespace NU36.Editor
             return AssetDatabase.LoadAssetAtPath<Mermi>(yol);
         }
 
-        static Bounds DunyaSiniri(GameObject go)
+        public static Bounds DunyaSiniri(GameObject go)
         {
             Renderer[] rs = go.GetComponentsInChildren<Renderer>();
             Bounds b = rs[0].bounds;
@@ -221,14 +221,14 @@ namespace NU36.Editor
             return b;
         }
 
-        static void KatmanAyarla(GameObject go, int katman)
+        public static void KatmanAyarla(GameObject go, int katman)
         {
             foreach (Transform t in go.GetComponentsInChildren<Transform>(true))
                 if (t.GetComponent<ParticleSystem>() == null)
                     t.gameObject.layer = katman;
         }
 
-        static T Ekle<T>(GameObject go, System.Action<SerializedObject> ayarla) where T : Component
+        public static T Ekle<T>(GameObject go, System.Action<SerializedObject> ayarla) where T : Component
         {
             var c = go.AddComponent<T>();
             var so = new SerializedObject(c);
@@ -237,7 +237,7 @@ namespace NU36.Editor
             return c;
         }
 
-        static void SaglikAyarla(Saglik s, int can, bool yalnizPatlama)
+        public static void SaglikAyarla(Saglik s, int can, bool yalnizPatlama)
         {
             var so = new SerializedObject(s);
             so.FindProperty("baslangicCani").intValue = can;
@@ -246,7 +246,7 @@ namespace NU36.Editor
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        static void SusturulabilirAyarla(GameObject go, DusmanTuru tur, Saglik s, Behaviour[] ates, ParticleSystem duman, Transform egilen, Vector3 egilme)
+        public static void SusturulabilirAyarla(GameObject go, DusmanTuru tur, Saglik s, Behaviour[] ates, ParticleSystem duman, Transform egilen, Vector3 egilme)
         {
             Ekle<Susturulabilir>(go, so =>
             {

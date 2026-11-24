@@ -243,8 +243,8 @@ MonoBehaviour:
   arkaplan: {fileID: 2800000, guid: 9f0e66de45303324bbe1ad572939222d, type: 3}
   dugmeSeti: {fileID: 2800000, guid: c885c114cf5097c418aa513ea57ab546, type: 3}
   baslik: NU.D.36
-  altBaslik: "B\xF6l\xFCm 4 \xB7 Kur\u015Fun Da\u011Flar\u0131"
-  gorevSahnesi: Bolum4_KursunDaglari
+  altBaslik: "B\xF6l\xFCm 5 \xB7 Kartal Ge\xE7idi"
+  gorevSahnesi: Bolum5_KartalGecidi
   bolumler:
   - ad: "Hafta 2 \xB7 Rota 02"
     sahne: Rota02
@@ -260,6 +260,8 @@ MonoBehaviour:
     sahne: Rota07
   - ad: "Hafta 8 \xB7 Kur\u015Fun Da\u011Flar\u0131"
     sahne: Bolum4_KursunDaglari
+  - ad: "Hafta 9 \xB7 Kartal Ge\xE7idi"
+    sahne: Bolum5_KartalGecidi
   geriTusu:
     m_Name: Geri
     m_Type: 1

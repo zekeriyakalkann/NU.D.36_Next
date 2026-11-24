@@ -168,3 +168,18 @@ Plan: `Lab8_Plan.md`. State: `Lab8_Implementation.md`.
 - Close Unity, then from the workspace root: `powershell -ExecutionPolicy Bypass -File Tools\Teslim\teslim_h8.ps1 -OgrenciNo <no> -Video <bolum4.mp4>` → `Teslim\BMU1421_<no>_H8.zip` (15–25 min; `-BuildYok` skips the check build).
 - The working copy lives in `%TEMP%\nu36_<no>` and is deleted at the end (`-KopyayiSakla` keeps it). Logs: `Logs/lab8/teslim_*.log`, `teslim_dogrulama.txt`.
 - Recording the video: `Documentation/Lab8_Video_Yonergesi.md`.
+
+## Lab 9: Bölüm 5 · Kartal Geçidi (Bolum5_KartalGecidi)
+Plan: `Lab9_Plan.md`. State: `Lab9_Implementation.md`.
+- **Scene:** menu **NU36 → Lab 9 → Create Bolum5 Scene** or `-executeMethod NU36.Editor.Lab9SceneBuilder.Create` (copies Bölüm 4, so Bölüm 4 must exist; refuses to overwrite).
+  - After a change to `KartalGecidiHaritasi`, `Lab9Arazi` or `Lab9Varliklar`, rebuild with `-executeMethod NU36.Editor.Lab9SceneBuilder.YenidenKur` (about 1 min). It deletes only the scene and `Assets/Bolum5/{Malzemeler,Prefablar,Uretilen,Arazi}`; `Assets/Bolum5/Dokular` (the downloaded sand) is kept.
+  - Bölüm 5 uses Bölüm 4's tank model, enemy aircraft prefab, trees, rocks and terrain layers: after `Lab8SceneBuilder.YenidenKur` (new GUIDs) rebuild Bölüm 5 too.
+- **Downloads:** `Indirilenler/Bolum5/` (`KAYNAKLAR.txt`): Poly Haven `coast_sand_01`, copied to `Assets/Bolum5/Dokular`.
+- **Tests:**
+  - EditMode: `-testFilter "NU36.Tests.Lab9Tests;NU36.Tests.MenuTests"`.
+  - PlayMode: `-testFilter "NU36.Tests.Lab9PlayTests;NU36.Tests.Lab9TurTests"` (about 2 min).
+  - Images (explicit): `-testFilter NU36.Tests.Lab9GorselKayit` → `Logs/lab9/gorsel/`.
+  - Measurements: `Logs/lab9/harita_olcumu.txt`, `oyun_olcumu.txt`, `tur_olcumu.txt`.
+- **Player:** `-executeMethod NU36.Editor.BuildCommands.BuildWindowsBolum5` → `Builds/Windows_Bolum5/NU.D.36.exe` (starts in Bölüm 5); `BuildWindowsOyun` → `Builds/Windows_Oyun/` (menu first; GÖREVE BAŞLA opens Bölüm 5).
+- **Main menu:** `-executeMethod NU36.Editor.Lab9Menu.Guncelle` (the Bölüm 5 builder also does it).
+- **Keys in Bölüm 5:** as Bölüm 4 — W/S nose, A/D turn, ↑/↓ throttle, Ctrl or left mouse = machine gun, Space = bomb, T = next target, O = firing assist, M = GPS, K = flight mode, F/B = brake, R = restart after the end, Esc = menu.

@@ -35,5 +35,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Bolum4_KursunDaglari.unity
     guid: 7a8140001af98b54f9b4737f7b138603
+  - enabled: 1
+    path: Assets/Scenes/Bolum5_KartalGecidi.unity
+    guid: c156fa52e767e914a9bc9baf50cae79a
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

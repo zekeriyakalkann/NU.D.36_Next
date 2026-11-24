@@ -59,6 +59,10 @@ namespace NU36
                 foreach (DusmanUcagi u in b.Ucaklar)
                     if (u != null && u.gameObject.activeInHierarchy && Yeni(u, u.AtisSayisi)) Cal(SesBankasi.Mermi, u.transform.position, dusmanSesi * 0.8f, 30f, 0.85f);
             }
+            // Lab 9: free targets (guard aircraft of Bölüm 5); none in Bölüm 4.
+            foreach (Susturulabilir s in Susturulabilir.Serbestler)
+                if (s != null && s.TryGetComponent(out DusmanUcagi du) && du.gameObject.activeInHierarchy && Yeni(du, du.AtisSayisi))
+                    Cal(SesBankasi.Mermi, du.transform.position, dusmanSesi * 0.8f, 30f, 0.85f);
             if (Patlama.SonZaman > sonPatlama)
             {
                 sonPatlama = Patlama.SonZaman;

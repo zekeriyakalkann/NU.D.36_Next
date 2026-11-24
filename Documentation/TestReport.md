@@ -301,3 +301,37 @@ NOT TESTED / USER: flying the arcade mode with a real keyboard; hearing the synt
 Two failed attempts before: a compile error (obsolete `objectReferenceInstanceIDValue` in Unity 6.6) and package files failing to unpack under a long working path (Windows path limit); both fixed (D-125).
 
 NOT TESTED / USER: the zip with the real video and student number; the upload.
+
+## 13. Lab 9 (Bölüm 5 · Kartal Geçidi), 2026-11-24
+Plan `Lab9_Plan.md` §7; mapping to the worksheet items in `Lab9_Implementation.md` §1. Results in `Logs/lab9/`.
+
+| Suite | Result |
+|---|---|
+| Scene build (`Lab9SceneBuilder.Create` / `YenidenKur`) | Succeeded; terrain in 3.0 s, 2 200 trees, 380 rocks; Bölüm 4 scene MD5 unchanged (`sahne_md5_once.txt`) |
+| `Lab9Tests` + `MenuTests` (EditMode) | **14/14 passed**: TEST-901 (new scene, Build Settings, Bölüm 4/Rota07/Bolum3_GriKutu/Rota05 unchanged, Bölüm 4 world gone, aircraft and controls kept); TEST-902 (flood fill: below 600 m only through the pass; floor ≤ 274 m; walls ≥ 839 m above it); TEST-903 data (4 lanes 300 m apart, ships stop in 2.8 m of water with the bow at the waterline, tanks land on dry ground); TEST-911 (ship = 24 primitives + 3 tanks, 46 × 10 m; no object named after people in the prefab or the 289 scene objects) — `harita_olcumu.txt` |
+| `Lab9PlayTests` + `Lab9TurTests` (PlayMode) | **9/9 passed** — `oyun_olcumu.txt`, `tur_olcumu.txt`: TEST-903 four ships at the start, nearest pair 454 m; TEST-904 three tanks landed and parked, HUD "KARADA TANK 3 / 12" (TEST-908); TEST-905 hit while unloading → stopped, 1 tank off, 2 aboard; TEST-906 replacement after 6 s from 1 400 m, it landed 3 tanks; TEST-907 fighters patrol 721 m from the bay centre while the player is away, then 46 shots, player health 100 → 90; TEST-909 coast fell at 12 tanks, restart requested; TEST-910 11 stopped + 1 unloaded → "BÖLÜM TAMAM", 3 tanks ashore; shot down → "VURULDUN" and restart; TEST-912 full round with the assists (scripted pilot, 4×): Tamam, 12/12 ships, 0 tanks ashore, 433 rounds, 6 bombs (all released by the assist) |
+| EditMode, whole project | **287 passed**, 1 explicit skipped, 0 failed (`editmode_tum.xml`) |
+| PlayMode, Lab 8 + menu + Lab 9 | **40/40 passed**, 360 s (`playmode_lab8_9_menu.xml`) |
+| PlayMode, earlier labs (Lab 2–7, scene smoke) | **123/123 passed**, 421 s (`playmode_eski.xml`) |
+| Images (`Lab9GorselKayit`, explicit) | 9 images in `Logs/lab9/gorsel/`: pass mouth, inside the pass, the bay with four ships, a beached ship with the ramp down and a tank ashore, a stopped ship burning, tanks parked, map from above, end panel |
+| `BuildWindowsBolum5`, `BuildWindowsOyun` | **Succeeded, 0 errors**, 31 warnings each, 233 MB (`build_bolum5.log`, `build_oyun.log`) |
+| Player smoke run (`Windows_Bolum5`, `-batchmode -nographics`, 25 s) | Ran 25 s, no exception or error (`player_bolum5.log`) |
+
+Found and fixed during the run: see `Lab9_Implementation.md` §3 (ridge wall too low near the coast; tank length test; ramp buried; tank count past 12 and doubled title after the coast fell; straight valley/ridge edges).
+
+NOT TESTED / USER:
+- Playing Bölüm 5 with a keyboard (flying the pass, stopping ships, fighting the guards); balance without the assists.
+- On-screen look in a graphics run of the built player (the images are in-editor camera renders).
+- Final visual check for people, flags or emblems.
+
+### 13.1 Landing made visible (D-138), 2026-11-24
+| Suite | Result |
+|---|---|
+| `Lab9Tests` + `MenuTests` (EditMode) | **15/15 passed**; new `Map_BeachedShipsRampRestsOnTheSandAtTheWaterline`: 20.8° in all four lanes, tip 0.02 m high, 3.6 m from the waterline |
+| `Lab9PlayTests` + `Lab9TurTests` (PlayMode) | **9/9 passed**; TEST-904 now also: ramp fully down to the computed angle with its tip on the ground, the first tank pitched 20.1° on the ramp and raised dust ashore, the beach camera opened on that ship |
+| Images (`Lab9GorselKayit`) | `04_hud_kiyi_kamerasi` (HUD with the beach camera window), `05_tank_rampada`, `06_kumsala_cikis_toz`, `07_gemi_ve_kumsal` |
+| `BuildWindowsBolum5`, `BuildWindowsOyun` | Succeeded, 0 errors |
+
+Only Bölüm 5 files changed in this round (shared scripts untouched), so the earlier labs' suites were not rerun.
+
+NOT TESTED / USER: watching the landing in the built game with a keyboard.

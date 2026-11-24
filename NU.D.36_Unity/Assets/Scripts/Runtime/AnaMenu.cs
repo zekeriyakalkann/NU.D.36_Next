@@ -49,8 +49,8 @@ namespace NU36
         [SerializeField] Texture arkaplan;
         [SerializeField] Texture dugmeSeti;
         [SerializeField] string baslik = "NU.D.36";
-        [SerializeField] string altBaslik = "Bölüm 4 · Kurşun Dağları";
-        [SerializeField] string gorevSahnesi = "Bolum4_KursunDaglari";
+        [SerializeField] string altBaslik = "Bölüm 5 · Kartal Geçidi";
+        [SerializeField] string gorevSahnesi = "Bolum5_KartalGecidi";
         [SerializeField] Bolum[] bolumler =
         {
             new Bolum("Hafta 2 · Rota 02", "Rota02"),
@@ -60,6 +60,7 @@ namespace NU36
             new Bolum("Hafta 6 · Gri Kutu", "Bolum3_GriKutu"),
             new Bolum("Hafta 7 · Gece Görevi", "Rota07"),
             new Bolum("Hafta 8 · Kurşun Dağları", "Bolum4_KursunDaglari"),
+            new Bolum("Hafta 9 · Kartal Geçidi", "Bolum5_KartalGecidi"),
         };
         [SerializeField] InputAction geriTusu = new InputAction("Geri", InputActionType.Button, "<Keyboard>/escape");
 
