@@ -365,3 +365,9 @@ Kullanıcı build'i oynadı ve şunları söyledi: uçağı rahat uçurmak mümk
   - Betiği öğrenci numarası ve videoyla çalıştırmak.
   - Zip'i OYS'ye yüklemek.
   - `Teslim\BMU1421_TEST_H8.zip` deneme dosyasıydı; kullanıcının izniyle silindi (11.11.2026).
+
+### 10.1 Teslim edilen zip (11.11.2026)
+- `Game Folder/BMU1421_23080410034_H8.zip`, 39,3 MB, videosuz. Kullanıcı oyunu hocaya yüz yüze gösterecek; puanlama yüz yüze yapılıyor.
+- Kopyada 0 kopuk referans var (şablondan kalma 11 URP GUID'i yok sayıldı).
+- Kopyadan build doğrulaması bu sefer atlandı (`-BuildYok`). Aynı içerik bir önceki denemede build edilmiş ve oyun hatasız açılmıştı.
+- Betiğe `-Hedef <klasör>` seçeneği eklendi.

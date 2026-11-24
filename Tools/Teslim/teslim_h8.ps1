@@ -12,13 +12,14 @@
 
   Kullanım (çalışma alanının kökünden, Unity Editor kapalıyken):
     powershell -ExecutionPolicy Bypass -File Tools\Teslim\teslim_h8.ps1 -OgrenciNo 123456789 -Video "C:\yol\bolum4.mp4"
-  Seçenekler: -BuildYok (doğrulama build'ini atla, ~10 dk kazandırır), -KopyayiSakla (%TEMP%
+  Seçenekler: -Hedef <klasör> (zip'in yazılacağı yer; varsayılan Teslim\), -BuildYok (doğrulama build'ini atla, ~10 dk kazandırır), -KopyayiSakla (%TEMP%
 u36_<no> çalışma kopyasını silme).
   Var olan bir zip'in üzerine yazmaz. Asıl projeyi değiştirmez (yalnız okur; Logs\lab8\ altına kayıt yazar).
 #>
 param(
     [Parameter(Mandatory = $true)][string]$OgrenciNo,
     [string]$Video = "",
+    [string]$Hedef = "",
     [switch]$BuildYok,
     [switch]$KopyayiSakla
 )
@@ -28,7 +29,7 @@ $proje = Join-Path $kok "NU.D.36_Unity"
 $unity = "C:\Program Files\Unity\Hub\Editor\6000.6.4f1\Editor\Unity.exe"
 $kayit = Join-Path $kok "Logs\lab8"
 $ad = "BMU1421_${OgrenciNo}_H8"
-$teslim = Join-Path $kok "Teslim"
+$teslim = if ($Hedef -ne "") { $Hedef } else { Join-Path $kok "Teslim" }
 $zip = Join-Path $teslim "$ad.zip"
 # Short path: Unity unpacks the packages under Library\PackageCache; a long path breaks Windows' 260-character limit.
 $calisma = Join-Path ([System.IO.Path]::GetTempPath()) "nu36_$OgrenciNo"
